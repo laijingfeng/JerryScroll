@@ -131,7 +131,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dir: 0
   cellSize: {x: 190, y: 190}
-  spacing: {x: 10, y: 0}
+  spacing: 10
 --- !u!1 &560516269
 GameObject:
   m_ObjectHideFlags: 0
@@ -306,7 +306,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dir: 1
   cellSize: {x: 190, y: 190}
-  spacing: {x: 0, y: 10}
+  spacing: 10
 --- !u!1 &773861168
 GameObject:
   m_ObjectHideFlags: 0
