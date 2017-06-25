@@ -1,13 +1,21 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
-public class Item : MonoBehaviour
+public class Item : MonoBehaviour, LayoutItem
 {
-    void Start()
+    private Image img;
+    private Text txt;
+
+    void Awake()
     {
+        img = this.transform.GetComponent<Image>();
+        txt = this.transform.FindChild("Text").GetComponent<Text>();
     }
 
-    void Update()
+    private void RefreshUI()
     {
+        txt.text = gridIdx.ToString();
+        img.color = gridIdx % 2 == 0 ? Color.yellow : Color.blue;
     }
 
     [ContextMenu("本地坐标")]
@@ -15,4 +23,34 @@ public class Item : MonoBehaviour
     {
         Debug.LogWarning(this.transform.localPosition);
     }
+
+    #region LayoutItem
+
+    private int gridIdx;
+    private bool gridState;
+
+    public void SetGridIdx(int idx, Vector3 localPos)
+    {
+        gridIdx = idx;
+        this.transform.localPosition = localPos;
+        RefreshUI();
+        //Debug.LogWarning("xxx " + idx);
+    }
+
+    public int GetGridIdx()
+    {
+        return gridIdx;
+    }
+
+    public void SetGridState(bool state)
+    {
+        gridState = state;
+    }
+
+    public bool GetGridState()
+    {
+        return gridState;
+    }
+
+    #endregion LayoutItem
 }
