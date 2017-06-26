@@ -42,6 +42,15 @@ public class Sample : MonoBehaviour
         }, datas);
     }
 
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            datas[0].id += 100;
+            Debug.LogWarning(datas[0].id + " " + datas[0].num);
+        }
+    }
+
     private void GenDatas()
     {
         datas.Clear();

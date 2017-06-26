@@ -19,6 +19,8 @@ public class Item : LayoutItem
 
     public override void TryRefreshUI(ILayoutItemData data)
     {
+        Debug.LogWarning("xx " + data);
+
         curData = data as ItemData;
 
         JerryUtil.CloneGo(new JerryUtil.CloneGoData()
