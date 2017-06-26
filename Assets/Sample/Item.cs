@@ -9,12 +9,12 @@ public class Item : MonoBehaviour, LayoutItem
     void Awake()
     {
         img = this.transform.GetComponent<Image>();
-        txt = this.transform.FindChild("Text").GetComponent<Text>();
+        //txt = this.transform.FindChild("Text").GetComponent<Text>();
     }
 
-    private void RefreshUI()
+    private void TryRefreshUI()
     {
-        txt.text = gridIdx.ToString();
+        //txt.text = gridIdx.ToString();
         img.color = gridIdx % 2 == 0 ? Color.yellow : Color.blue;
     }
 
@@ -22,6 +22,13 @@ public class Item : MonoBehaviour, LayoutItem
     private void Pos()
     {
         Debug.LogWarning(this.transform.localPosition);
+    }
+
+    public class ItemData
+    {
+        public int id;
+        public int num;
+        public string head;
     }
 
     #region LayoutItem
@@ -33,7 +40,7 @@ public class Item : MonoBehaviour, LayoutItem
     {
         gridIdx = idx;
         this.transform.localPosition = localPos;
-        RefreshUI();
+        TryRefreshUI();
         //Debug.LogWarning("xxx " + idx);
     }
 
