@@ -10,23 +10,36 @@ public class Sample : MonoBehaviour
     private List<Item.ItemData> datas = new List<Item.ItemData>();
     private int dataAmt = 20;
 
-    private InfinitelyLinearGridLayoutGroup layoutH;
+    private Layout layoutH;
+    private Layout layoutV;
 
     void Awake()
     {
         GenDatas();
-        layoutH = layoutHContent.gameObject.AddComponent<InfinitelyLinearGridLayoutGroup>();
-        layoutH.DoInit<Item.ItemData, Item>(new InfinitelyLinearGridLayoutGroup.InitData<Item.ItemData, Item>()
+        layoutH = layoutHContent.gameObject.AddComponent<Layout>();
+        layoutV = layoutVContent.gameObject.AddComponent<Layout>();
+        
+        layoutH.DoInit(new Layout.ConfigData()
         {
-            datas = datas,
             startIdx = 0,
             bufferHalfAmt = 1,
             cellSize = new Vector2(190, 190),
-            dir = InfinitelyLinearGridLayoutGroup.Dir.Horizontal,
+            dir = Layout.Dir.Horizontal,
             oneScreenAmt = 3,
             prefab = prefab.transform,
             spacing = 10,
-        });
+        }, datas);
+
+        layoutV.DoInit(new Layout.ConfigData()
+        {
+            startIdx = 0,
+            bufferHalfAmt = 1,
+            cellSize = new Vector2(190, 190),
+            dir = Layout.Dir.Vertical,
+            oneScreenAmt = 3,
+            prefab = prefab.transform,
+            spacing = 10,
+        }, datas);
     }
 
     private void GenDatas()

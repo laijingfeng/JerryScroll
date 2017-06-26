@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using Jerry;
 
 public class Item : LayoutItem
 {
@@ -8,7 +9,6 @@ public class Item : LayoutItem
     private Text num;
 
     private ItemData curData = null;
-    private ItemData newData = null;
 
     void Awake()
     {
@@ -17,15 +17,20 @@ public class Item : LayoutItem
         num = this.transform.FindChild("id").GetComponent<Text>();
     }
 
-    [ContextMenu("本地坐标")]
-    private void Pos()
-    {
-        Debug.LogWarning(this.transform.localPosition);
-    }
-
     public override void TryRefreshUI(ILayoutItemData data)
     {
         curData = data as ItemData;
+
+        JerryUtil.CloneGo(new JerryUtil.CloneGoData()
+        {
+            active = true,
+            clean = true,
+            parant = head,
+            prefab = Resources.Load<GameObject>(curData.head),
+        });
+
+        id.text = curData.id.ToString();
+        num.text = curData.num.ToString();
     }
 
     public class ItemData : ILayoutItemData

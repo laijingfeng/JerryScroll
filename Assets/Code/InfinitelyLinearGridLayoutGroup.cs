@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Jerry;
 using UnityEngine;
 
-public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
+public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
+    where T : LayoutItem
+    where F : ILayoutItemData
 {
-    [Header("Settings")]
-
     /// <summary>
     /// 视野内的元素开始的编号
     /// </summary>
@@ -14,30 +15,41 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
     /// <summary>
     /// 创建的对象
     /// </summary>
-    private List<ILayoutItem> itemList = new List<ILayoutItem>();
+    private List<T> itemList = new List<T>();
 
     private bool awaked = false;
     private bool inited = false;
     private bool ready = false;
-    private InitData<ILayoutItemData, LayoutItem> data;
 
-    void Awake()
+    private ConfigData config = new ConfigData();
+
+    /// <summary>
+    /// 数据
+    /// </summary>
+    private List<F> datas = new List<F>();
+    private int TotalAmt
+    {
+        get
+        {
+            return (datas == null) ? 0 : datas.Count;
+        }
+    }
+
+    public virtual void Awake()
     {
         awaked = true;
         TryWork();
     }
 
-    void Update()
+    public virtual void Update()
     {
         CheckUpdate();
     }
 
-    public void DoInit<T, F>(InitData<T, F> tdata)
-        where T : ILayoutItemData
-        where F : LayoutItem
+    public void DoInit(ConfigData tconfig, List<F> tdatas)
     {
-        data = tdata as InitData<ILayoutItemData, LayoutItem>;
-        Debug.LogWarning((data == null) + " ");
+        config = tconfig;
+        datas = tdatas;
         inited = true;
         TryWork();
     }
@@ -51,21 +63,39 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
         }
 
         rectTran = this.transform as RectTransform;
+        switch (config.dir)
+        {
+            case Dir.Horizontal:
+                {
+                    rectTran.pivot = new Vector2(0, 0.5f);
+                    (rectTran.parent as RectTransform).pivot = new Vector2(0, 0.5f);
+                    rectTran.anchorMin = new Vector2(0, 0.5f);
+                    rectTran.anchorMax = new Vector2(0, 0.5f);
+                }
+                break;
+            case Dir.Vertical:
+                {
+                    rectTran.pivot = new Vector2(0.5f, 1.0f);
+                    (rectTran.parent as RectTransform).pivot = new Vector2(0.5f, 1.0f);
+                    rectTran.anchorMin = new Vector2(0.5f, 1.0f);
+                    rectTran.anchorMax = new Vector2(0.5f, 1.0f);
+                }
+                break;
+        }
 
         itemList.Clear();
         JerryUtil.DestroyAllChildren(this.transform);
 
         curFirstIdx = -1;
 
-        if (data.startIdx >= data.TotalAmt)
+        if (config.startIdx >= TotalAmt)
         {
-            data.startIdx = data.TotalAmt - 1;
+            config.startIdx = TotalAmt - 1;
         }
-        if (data.startIdx < 0)
+        if (config.startIdx < 0)
         {
-            data.startIdx = 0;
+            config.startIdx = 0;
         }
-
         ResetPos();
         ResetDelta();
 
@@ -76,10 +106,10 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
     private int calFirstIdxIdx;
     private void CalFirstIdx()
     {
-        calFirstIdxPos = data.dir == Dir.Horizontal ? -this.transform.localPosition.x : this.transform.localPosition.y;
-        calFirstIdxPosSize = data.dir == Dir.Horizontal ? data.cellSize.x : data.cellSize.y;
-        calFirstIdxIdx = (int)(calFirstIdxPos / (calFirstIdxPosSize + data.spacing));//一个元素的位置:[i*(size+spacing),i*(size+spacing)+size]
-        calFirstIdxIdx -= data.bufferHalfAmt;
+        calFirstIdxPos = config.dir == Dir.Horizontal ? -this.transform.localPosition.x : this.transform.localPosition.y;
+        calFirstIdxPosSize = config.dir == Dir.Horizontal ? config.cellSize.x : config.cellSize.y;
+        calFirstIdxIdx = (int)(calFirstIdxPos / (calFirstIdxPosSize + config.spacing));//一个元素的位置:[i*(size+spacing),i*(size+spacing)+size]
+        calFirstIdxIdx -= config.bufferHalfAmt;
         if (calFirstIdxIdx < 0)
         {
             calFirstIdxIdx = 0;
@@ -104,16 +134,16 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
     }
 
     private int curLastIdx;
-    private ILayoutItem tmpLayoutItem;
+    private T tmpLayoutItem;
     private void RefreshData()
     {
-        curLastIdx = curFirstIdx + data.oneScreenAmt + data.bufferHalfAmt * 2;
-        if (curLastIdx >= data.TotalAmt)
+        curLastIdx = curFirstIdx + config.oneScreenAmt + config.bufferHalfAmt * 2;
+        if (curLastIdx >= TotalAmt)
         {
-            curLastIdx = data.TotalAmt - 1;
+            curLastIdx = TotalAmt - 1;
         }
 
-        foreach (ILayoutItem item in itemList)
+        foreach (T item in itemList)
         {
             if (item.GetGridIdx() >= curFirstIdx
                 && item.GetGridIdx() <= curLastIdx)
@@ -136,27 +166,50 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
             tmpLayoutItem = itemList.Find((x) => x.GetGridState() == false);
             if (tmpLayoutItem == null)
             {
-                tmpLayoutItem = data.CreateOneItem(i, this.transform);
+                tmpLayoutItem = JerryUtil.CloneGo<T>(new JerryUtil.CloneGoData()
+                {
+                    name = i.ToString(),
+                    parant = this.transform,
+                    prefab = config.prefab.gameObject,
+                    active = true,
+                });
+                switch (config.dir)
+                {
+                    case Dir.Horizontal:
+                        {
+                            (tmpLayoutItem.transform as RectTransform).pivot = new Vector2(0, 0.5f);
+                            (tmpLayoutItem.transform as RectTransform).anchorMin = new Vector2(0.5f, 0.5f);
+                            (tmpLayoutItem.transform as RectTransform).anchorMax = new Vector2(0.5f, 0.5f);
+                        }
+                        break;
+                    case Dir.Vertical:
+                        {
+                            (tmpLayoutItem.transform as RectTransform).pivot = new Vector2(0.5f, 1.0f);
+                            (tmpLayoutItem.transform as RectTransform).anchorMin = new Vector2(0.5f, 0.5f);
+                            (tmpLayoutItem.transform as RectTransform).anchorMax = new Vector2(0.5f, 0.5f);
+                        }
+                        break;
+                }
                 itemList.Add(tmpLayoutItem);
             }
             tmpLayoutItem.SetGridState(true);
-            tmpLayoutItem.SetGridIdx(i, CalGridPos(i), data.datas[i]);
+            tmpLayoutItem.SetGridIdx(i, CalGridPos(i), datas[i]);
         }
     }
 
     private Vector3 CalGridPos(int idx)
     {
         Vector3 ret = Vector3.zero;
-        switch (data.dir)
+        switch (config.dir)
         {
             case Dir.Horizontal:
                 {
-                    ret.x += idx * (data.spacing + data.cellSize.x);
+                    ret.x += idx * (config.spacing + config.cellSize.x);
                 }
                 break;
             case Dir.Vertical:
                 {
-                    ret.x -= idx * (data.spacing + data.cellSize.x);
+                    ret.y -= idx * (config.spacing + config.cellSize.y);
                 }
                 break;
         }
@@ -166,16 +219,16 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
     private void ResetPos()
     {
         Vector3 pos = Vector3.zero;
-        switch (data.dir)
+        switch (config.dir)
         {
             case Dir.Horizontal:
                 {
-                    pos.x -= data.startIdx * (data.spacing + data.cellSize.x);
+                    pos.x -= config.startIdx * (config.spacing + config.cellSize.x);
                 }
                 break;
             case Dir.Vertical:
                 {
-                    pos.y += data.startIdx * (data.spacing + data.cellSize.x);
+                    pos.y += config.startIdx * (config.spacing + config.cellSize.x);
                 }
                 break;
         }
@@ -184,24 +237,24 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
 
     private void ResetDelta()
     {
-        Vector2 size = data.cellSize;
-        switch (data.dir)
+        Vector2 size = config.cellSize;
+        switch (config.dir)
         {
             case Dir.Horizontal:
                 {
-                    size.x = data.TotalAmt * data.cellSize.x;
-                    if (data.TotalAmt > 0)
+                    size.x = TotalAmt * config.cellSize.x;
+                    if (TotalAmt > 0)
                     {
-                        size.x += (data.TotalAmt - 1) * data.spacing;
+                        size.x += (TotalAmt - 1) * config.spacing;
                     }
                 }
                 break;
             case Dir.Vertical:
                 {
-                    size.y = data.TotalAmt * data.cellSize.y;
-                    if (data.TotalAmt > 0)
+                    size.y = TotalAmt * config.cellSize.y;
+                    if (TotalAmt > 0)
                     {
-                        size.y += (data.TotalAmt - 1) * data.spacing;
+                        size.y += (TotalAmt - 1) * config.spacing;
                     }
                 }
                 break;
@@ -215,10 +268,7 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
         Vertical,
     }
 
-    [SerializeField]
-    public class InitData<T, F>
-        where T : ILayoutItemData
-        where F : LayoutItem
+    public class ConfigData
     {
         public Dir dir = Dir.Horizontal;
         public Vector2 cellSize = new Vector2(100f, 100f);
@@ -239,26 +289,5 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
         /// 开始下标
         /// </summary>
         public int startIdx = 0;
-
-        public List<T> datas = new List<T>();
-
-        public ILayoutItem CreateOneItem(int idx, Transform parent)
-        {
-            return JerryUtil.CloneGo<F>(new JerryUtil.CloneGoData()
-            {
-                name = idx.ToString(),
-                parant = parent,
-                prefab = prefab.gameObject,
-                active = true,
-            });
-        }
-
-        public int TotalAmt
-        {
-            get
-            {
-                return (datas == null) ? 0 : datas.Count;
-            }
-        }
     }
 }

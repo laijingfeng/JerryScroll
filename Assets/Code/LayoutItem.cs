@@ -1,5 +1,9 @@
 ﻿using UnityEngine;
 
+public interface ILayoutItemData
+{
+}
+
 public interface ILayoutItem
 {
     void SetGridIdx(int idx, Vector3 localPos, ILayoutItemData data);
@@ -38,8 +42,4 @@ public abstract class LayoutItem : MonoBehaviour, ILayoutItem
     {
         return gridState;
     }
-}
-
-public interface ILayoutItemData
-{
 }
