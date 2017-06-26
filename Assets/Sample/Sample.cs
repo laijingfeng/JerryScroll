@@ -4,15 +4,29 @@ using UnityEngine;
 public class Sample : MonoBehaviour
 {
     public GameObject prefab;
-    public InfinitelyLinearGridLayoutGroup layoutH;
-    public InfinitelyLinearGridLayoutGroup layoutV;
+    public Transform layoutHContent;
+    public Transform layoutVContent;
 
     private List<Item.ItemData> datas = new List<Item.ItemData>();
     private int dataAmt = 20;
 
+    private InfinitelyLinearGridLayoutGroup layoutH;
+
     void Awake()
     {
         GenDatas();
+        layoutH = layoutHContent.gameObject.AddComponent<InfinitelyLinearGridLayoutGroup>();
+        layoutH.DoInit<Item.ItemData, Item>(new InfinitelyLinearGridLayoutGroup.InitData<Item.ItemData, Item>()
+        {
+            datas = datas,
+            startIdx = 0,
+            bufferHalfAmt = 1,
+            cellSize = new Vector2(190, 190),
+            dir = InfinitelyLinearGridLayoutGroup.Dir.Horizontal,
+            oneScreenAmt = 3,
+            prefab = prefab.transform,
+            spacing = 10,
+        });
     }
 
     private void GenDatas()

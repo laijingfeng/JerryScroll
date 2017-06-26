@@ -1,21 +1,20 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class Item : MonoBehaviour, LayoutItem
+public class Item : LayoutItem
 {
-    private Image img;
-    private Text txt;
+    private Transform head;
+    private Text id;
+    private Text num;
+
+    private ItemData curData = null;
+    private ItemData newData = null;
 
     void Awake()
     {
-        img = this.transform.GetComponent<Image>();
-        //txt = this.transform.FindChild("Text").GetComponent<Text>();
-    }
-
-    private void TryRefreshUI()
-    {
-        //txt.text = gridIdx.ToString();
-        img.color = gridIdx % 2 == 0 ? Color.yellow : Color.blue;
+        head = this.transform.FindChild("head");
+        id = this.transform.FindChild("id").GetComponent<Text>();
+        num = this.transform.FindChild("id").GetComponent<Text>();
     }
 
     [ContextMenu("本地坐标")]
@@ -24,40 +23,15 @@ public class Item : MonoBehaviour, LayoutItem
         Debug.LogWarning(this.transform.localPosition);
     }
 
-    public class ItemData
+    public override void TryRefreshUI(ILayoutItemData data)
+    {
+        curData = data as ItemData;
+    }
+
+    public class ItemData : ILayoutItemData
     {
         public int id;
         public int num;
         public string head;
     }
-
-    #region LayoutItem
-
-    private int gridIdx;
-    private bool gridState;
-
-    public void SetGridIdx(int idx, Vector3 localPos)
-    {
-        gridIdx = idx;
-        this.transform.localPosition = localPos;
-        TryRefreshUI();
-        //Debug.LogWarning("xxx " + idx);
-    }
-
-    public int GetGridIdx()
-    {
-        return gridIdx;
-    }
-
-    public void SetGridState(bool state)
-    {
-        gridState = state;
-    }
-
-    public bool GetGridState()
-    {
-        return gridState;
-    }
-
-    #endregion LayoutItem
 }

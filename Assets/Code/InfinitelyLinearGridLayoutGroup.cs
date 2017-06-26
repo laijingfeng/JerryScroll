@@ -6,28 +6,25 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
 {
     [Header("Settings")]
 
-    public Dir dir = Dir.Horizontal;
-    public Vector2 cellSize = new Vector2(100f, 100f);
-    public float spacing = 10f;
-    public Transform prefab;
-
-    [Header("Init")]
-
-    public int oneScreenAmt = 1;
-    public int bufferHalfAmt = 1;
-    public int startIdx = 0;
-    public int totalAmt;
-
     /// <summary>
     /// 视野内的元素开始的编号
     /// </summary>
     private int curFirstIdx;
     private RectTransform rectTran;
-    private List<LayoutItem> itemList = new List<LayoutItem>();
-    
+    /// <summary>
+    /// 创建的对象
+    /// </summary>
+    private List<ILayoutItem> itemList = new List<ILayoutItem>();
+
+    private bool awaked = false;
+    private bool inited = false;
+    private bool ready = false;
+    private InitData<ILayoutItemData, LayoutItem> data;
+
     void Awake()
     {
-        DoInit();
+        awaked = true;
+        TryWork();
     }
 
     void Update()
@@ -35,33 +32,54 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
         CheckUpdate();
     }
 
-    private void DoInit()
+    public void DoInit<T, F>(InitData<T, F> tdata)
+        where T : ILayoutItemData
+        where F : LayoutItem
     {
+        data = tdata as InitData<ILayoutItemData, LayoutItem>;
+        Debug.LogWarning((data == null) + " ");
+        inited = true;
+        TryWork();
+    }
+
+    private void TryWork()
+    {
+        if (!awaked
+            || !inited)
+        {
+            return;
+        }
+
         rectTran = this.transform as RectTransform;
+
         itemList.Clear();
         JerryUtil.DestroyAllChildren(this.transform);
+
         curFirstIdx = -1;
 
-        if (startIdx >= totalAmt)
+        if (data.startIdx >= data.TotalAmt)
         {
-            startIdx = totalAmt - 1;
+            data.startIdx = data.TotalAmt - 1;
         }
-        if (startIdx < 0)
+        if (data.startIdx < 0)
         {
-            startIdx = 0;
+            data.startIdx = 0;
         }
+
         ResetPos();
         ResetDelta();
+
+        ready = true;
     }
 
     private float calFirstIdxPos, calFirstIdxPosSize;
     private int calFirstIdxIdx;
     private void CalFirstIdx()
     {
-        calFirstIdxPos = dir == Dir.Horizontal ? -this.transform.localPosition.x : this.transform.localPosition.y;
-        calFirstIdxPosSize = dir == Dir.Horizontal ? cellSize.x : cellSize.y;
-        calFirstIdxIdx = (int)(calFirstIdxPos / (calFirstIdxPosSize + spacing));//一个元素的位置:[i*(size+spacing),i*(size+spacing)+size]
-        calFirstIdxIdx -= bufferHalfAmt;
+        calFirstIdxPos = data.dir == Dir.Horizontal ? -this.transform.localPosition.x : this.transform.localPosition.y;
+        calFirstIdxPosSize = data.dir == Dir.Horizontal ? data.cellSize.x : data.cellSize.y;
+        calFirstIdxIdx = (int)(calFirstIdxPos / (calFirstIdxPosSize + data.spacing));//一个元素的位置:[i*(size+spacing),i*(size+spacing)+size]
+        calFirstIdxIdx -= data.bufferHalfAmt;
         if (calFirstIdxIdx < 0)
         {
             calFirstIdxIdx = 0;
@@ -70,6 +88,13 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
 
     private void CheckUpdate()
     {
+        if (!awaked
+            || !inited
+            || !ready)
+        {
+            return;
+        }
+
         CalFirstIdx();
         if (curFirstIdx != calFirstIdxIdx)
         {
@@ -79,18 +104,18 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
     }
 
     private int curLastIdx;
-    private LayoutItem tmpLayoutItem;
+    private ILayoutItem tmpLayoutItem;
     private void RefreshData()
     {
-        curLastIdx = curFirstIdx + oneScreenAmt + bufferHalfAmt * 2;
-        if (curLastIdx >= totalAmt)
+        curLastIdx = curFirstIdx + data.oneScreenAmt + data.bufferHalfAmt * 2;
+        if (curLastIdx >= data.TotalAmt)
         {
-            curLastIdx = totalAmt - 1;
+            curLastIdx = data.TotalAmt - 1;
         }
 
-        foreach (LayoutItem item in itemList)
+        foreach (ILayoutItem item in itemList)
         {
-            if(item.GetGridIdx() >= curFirstIdx
+            if (item.GetGridIdx() >= curFirstIdx
                 && item.GetGridIdx() <= curLastIdx)
             {
                 item.SetGridState(true);
@@ -111,33 +136,27 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
             tmpLayoutItem = itemList.Find((x) => x.GetGridState() == false);
             if (tmpLayoutItem == null)
             {
-                tmpLayoutItem = JerryUtil.CloneGo<Item>(new JerryUtil.CloneGoData()
-                {
-                    name = i.ToString(),
-                    parant = this.transform,
-                    prefab = prefab.gameObject,
-                    active = true,
-                });
+                tmpLayoutItem = data.CreateOneItem(i, this.transform);
                 itemList.Add(tmpLayoutItem);
             }
             tmpLayoutItem.SetGridState(true);
-            tmpLayoutItem.SetGridIdx(i, CalGridPos(i));
+            tmpLayoutItem.SetGridIdx(i, CalGridPos(i), data.datas[i]);
         }
     }
 
     private Vector3 CalGridPos(int idx)
     {
         Vector3 ret = Vector3.zero;
-        switch (dir)
+        switch (data.dir)
         {
             case Dir.Horizontal:
                 {
-                    ret.x += idx * (spacing + cellSize.x);
+                    ret.x += idx * (data.spacing + data.cellSize.x);
                 }
                 break;
             case Dir.Vertical:
                 {
-                    ret.x -= idx * (spacing + cellSize.x);
+                    ret.x -= idx * (data.spacing + data.cellSize.x);
                 }
                 break;
         }
@@ -147,16 +166,16 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
     private void ResetPos()
     {
         Vector3 pos = Vector3.zero;
-        switch (dir)
+        switch (data.dir)
         {
             case Dir.Horizontal:
                 {
-                    pos.x -= startIdx * (spacing + cellSize.x);
+                    pos.x -= data.startIdx * (data.spacing + data.cellSize.x);
                 }
                 break;
             case Dir.Vertical:
                 {
-                    pos.y += startIdx * (spacing + cellSize.x);
+                    pos.y += data.startIdx * (data.spacing + data.cellSize.x);
                 }
                 break;
         }
@@ -165,24 +184,24 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
 
     private void ResetDelta()
     {
-        Vector2 size = cellSize;
-        switch (dir)
+        Vector2 size = data.cellSize;
+        switch (data.dir)
         {
             case Dir.Horizontal:
                 {
-                    size.x = totalAmt * cellSize.x;
-                    if (totalAmt > 0)
+                    size.x = data.TotalAmt * data.cellSize.x;
+                    if (data.TotalAmt > 0)
                     {
-                        size.x += (totalAmt - 1) * spacing;
+                        size.x += (data.TotalAmt - 1) * data.spacing;
                     }
                 }
                 break;
             case Dir.Vertical:
                 {
-                    size.y = totalAmt * cellSize.y;
-                    if (totalAmt > 0)
+                    size.y = data.TotalAmt * data.cellSize.y;
+                    if (data.TotalAmt > 0)
                     {
-                        size.y += (totalAmt - 1) * spacing;
+                        size.y += (data.TotalAmt - 1) * data.spacing;
                     }
                 }
                 break;
@@ -194,5 +213,52 @@ public class InfinitelyLinearGridLayoutGroup : MonoBehaviour
     {
         Horizontal = 0,
         Vertical,
+    }
+
+    [SerializeField]
+    public class InitData<T, F>
+        where T : ILayoutItemData
+        where F : LayoutItem
+    {
+        public Dir dir = Dir.Horizontal;
+        public Vector2 cellSize = new Vector2(100f, 100f);
+        public float spacing = 10f;
+        public Transform prefab;
+
+        /// <summary>
+        /// 一屏数量，取上整
+        /// </summary>
+        public int oneScreenAmt = 1;
+
+        /// <summary>
+        /// 额外缓存数量
+        /// </summary>
+        public int bufferHalfAmt = 0;
+
+        /// <summary>
+        /// 开始下标
+        /// </summary>
+        public int startIdx = 0;
+
+        public List<T> datas = new List<T>();
+
+        public ILayoutItem CreateOneItem(int idx, Transform parent)
+        {
+            return JerryUtil.CloneGo<F>(new JerryUtil.CloneGoData()
+            {
+                name = idx.ToString(),
+                parant = parent,
+                prefab = prefab.gameObject,
+                active = true,
+            });
+        }
+
+        public int TotalAmt
+        {
+            get
+            {
+                return (datas == null) ? 0 : datas.Count;
+            }
+        }
     }
 }
