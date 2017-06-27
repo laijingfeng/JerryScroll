@@ -35,11 +35,11 @@ public class Sample : MonoBehaviour
             }
             if (sortFlag)
             {
-                datas.Sort(SortCmp1);
+                datas.Sort(SortCmp2);
             }
             else
             {
-                datas.Sort(SortCmp2);
+                datas.Sort(SortCmp1);
             }
             sortFlag = !sortFlag;
             layoutH.RefreshDatas();

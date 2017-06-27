@@ -9,6 +9,7 @@ public class Item : LayoutItem
     private Text num;
 
     private ItemData curData = null;
+    private ItemDataChange dataChange = new ItemDataChange();
 
     void Awake()
     {
@@ -19,17 +20,18 @@ public class Item : LayoutItem
 
     public override void TryRefreshUI(ILayoutItemData data)
     {
-        curData = data as ItemData;
+        curData = dataChange.Diff(curData, data as ItemData);
 
-        //Debug.LogWarning("xx " + curData.id + " " + curData.num);
-
-        JerryUtil.CloneGo(new JerryUtil.CloneGoData()
+        if (dataChange.headChanged)
         {
-            active = true,
-            clean = true,
-            parant = head,
-            prefab = Resources.Load<GameObject>(curData.head),
-        });
+            JerryUtil.CloneGo(new JerryUtil.CloneGoData()
+            {
+                active = true,
+                clean = true,
+                parant = head,
+                prefab = Resources.Load<GameObject>(curData.head),
+            });
+        }
 
         id.text = curData.id.ToString();
         num.text = curData.num.ToString();
@@ -40,5 +42,15 @@ public class Item : LayoutItem
         public int id;
         public int num;
         public string head;
+    }
+
+    public class ItemDataChange
+    {
+        public bool headChanged = false;
+        public ItemData Diff(ItemData oriD, ItemData newD)
+        {
+            headChanged = (oriD == null || DiffUtil.DiffStr(oriD.head, newD.head));
+            return newD;
+        }
     }
 }

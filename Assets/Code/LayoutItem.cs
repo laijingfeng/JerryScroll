@@ -4,16 +4,7 @@ public interface ILayoutItemData
 {
 }
 
-public interface ILayoutItem
-{
-    void SetGridIdx(int idx, Vector3 localPos, ILayoutItemData data);
-    int GetGridIdx();
-
-    void SetGridState(bool state);
-    bool GetGridState();
-}
-
-public abstract class LayoutItem : MonoBehaviour, ILayoutItem
+public abstract class LayoutItem : MonoBehaviour
 {
     private int gridIdx;
     private bool gridState;
@@ -41,5 +32,17 @@ public abstract class LayoutItem : MonoBehaviour, ILayoutItem
     public bool GetGridState()
     {
         return gridState;
+    }
+}
+
+public class DiffUtil
+{
+    public static bool DiffStr(string a, string b)
+    {
+        if (a == b || string.IsNullOrEmpty(a))
+        {
+            return false;
+        }
+        return !a.Equals(b);
     }
 }
