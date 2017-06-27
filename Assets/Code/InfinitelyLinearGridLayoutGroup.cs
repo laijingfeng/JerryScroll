@@ -34,7 +34,7 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
     /// 数据
     /// </summary>
     private List<F> datas = new List<F>();
-    private int TotalAmt
+    private int TotalCount
     {
         get
         {
@@ -111,7 +111,6 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
         {
             case Dir.Horizontal:
                 {
-                    rectTran.pivot = new Vector2(0, 0.5f);
                     (rectTran.parent as RectTransform).pivot = new Vector2(0, 0.5f);
                     rectTran.anchorMin = new Vector2(0, 0.5f);
                     rectTran.anchorMax = new Vector2(0, 0.5f);
@@ -119,14 +118,13 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
                 break;
             case Dir.Vertical:
                 {
-                    rectTran.pivot = new Vector2(0.5f, 1.0f);
                     (rectTran.parent as RectTransform).pivot = new Vector2(0.5f, 1.0f);
                     rectTran.anchorMin = new Vector2(0.5f, 1.0f);
                     rectTran.anchorMax = new Vector2(0.5f, 1.0f);
                 }
                 break;
         }
-
+        rectTran.pivot = new Vector2(0, 1);
         itemList.Clear();
         JerryUtil.DestroyAllChildren(this.transform);
 
@@ -138,14 +136,15 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
         ready = true;
     }
 
-    private float calFirstIdxPos, calFirstIdxPosSize;
+    private float calFirstIdxPos, calFirstIdxSize, calFirstIdxSpacing;
     private int calFirstIdxIdx;
     private void CalFirstIdx()
     {
         calFirstIdxPos = config.dir == Dir.Horizontal ? -this.transform.localPosition.x : this.transform.localPosition.y;
-        calFirstIdxPosSize = config.dir == Dir.Horizontal ? config.cellSize.x : config.cellSize.y;
-        calFirstIdxIdx = (int)(calFirstIdxPos / (calFirstIdxPosSize + config.spacing));//一个元素的位置:[i*(size+spacing),i*(size+spacing)+size]
-        calFirstIdxIdx -= config.bufferHalfAmt;
+        calFirstIdxSize = config.dir == Dir.Horizontal ? config.cellSize.x : config.cellSize.y;
+        calFirstIdxSpacing = config.dir == Dir.Horizontal ? config.spacing.x : config.spacing.y;
+        calFirstIdxIdx = (int)(calFirstIdxPos / (calFirstIdxSize + calFirstIdxSpacing)) * config.fixedRowOrColumnCount;
+        calFirstIdxIdx -= config.viewCountHalfBuffer * config.fixedRowOrColumnCount;
         if (calFirstIdxIdx < 0)
         {
             calFirstIdxIdx = 0;
@@ -173,10 +172,10 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
     private T tmpLayoutItem;
     private void RefreshData(bool forceUpdate = false)
     {
-        curLastIdx = curFirstIdx + config.oneScreenAmt + config.bufferHalfAmt * 2;
-        if (curLastIdx >= TotalAmt)
+        curLastIdx = curFirstIdx + (config.fiexdDirViewCount + config.viewCountHalfBuffer * 2) * config.fixedRowOrColumnCount - 1;
+        if (curLastIdx >= TotalCount)
         {
-            curLastIdx = TotalAmt - 1;
+            curLastIdx = TotalCount - 1;
         }
 
         foreach (T item in itemList)
@@ -215,23 +214,22 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
                 {
                     case Dir.Horizontal:
                         {
-                            (tmpLayoutItem.transform as RectTransform).pivot = new Vector2(0, 0.5f);
                             (tmpLayoutItem.transform as RectTransform).anchorMin = new Vector2(0.5f, 0.5f);
                             (tmpLayoutItem.transform as RectTransform).anchorMax = new Vector2(0.5f, 0.5f);
                         }
                         break;
                     case Dir.Vertical:
                         {
-                            (tmpLayoutItem.transform as RectTransform).pivot = new Vector2(0.5f, 1.0f);
                             (tmpLayoutItem.transform as RectTransform).anchorMin = new Vector2(0.5f, 0.5f);
                             (tmpLayoutItem.transform as RectTransform).anchorMax = new Vector2(0.5f, 0.5f);
                         }
                         break;
                 }
+                (tmpLayoutItem.transform as RectTransform).pivot = new Vector2(0, 1);
                 itemList.Add(tmpLayoutItem);
             }
             tmpLayoutItem.SetGridState(true);
-            tmpLayoutItem.SetGridIdx(i, CalGridPos(i), datas[i]);
+            tmpLayoutItem.SetGridIdx(i, Idx2LocalPos(i), datas[i]);
         }
 
         for (int i = 0, imax = itemList.Count; i < imax; i++)
@@ -248,30 +246,35 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
         }
     }
 
-    private Vector3 CalGridPos(int idx)
+    private Vector3 Idx2LocalPos(int idx)
     {
         Vector3 ret = Vector3.zero;
+        int gridX = 0, gridY = 0;
         switch (config.dir)
         {
             case Dir.Horizontal:
                 {
-                    ret.x += idx * (config.spacing + config.cellSize.x);
+                    gridX = idx / config.fixedRowOrColumnCount;
+                    gridY = idx % config.fixedRowOrColumnCount;
                 }
                 break;
             case Dir.Vertical:
                 {
-                    ret.y -= idx * (config.spacing + config.cellSize.y);
+                    gridX = idx % config.fixedRowOrColumnCount;
+                    gridY = idx / config.fixedRowOrColumnCount;
                 }
                 break;
         }
+        ret.x += gridX * (config.spacing.x + config.cellSize.x);
+        ret.y -= gridY * (config.spacing.y + config.cellSize.y);
         return ret;
     }
 
     private void CheckStartIdx()
     {
-        if (config.startIdx >= TotalAmt)
+        if (config.startIdx >= TotalCount)
         {
-            config.startIdx = TotalAmt - 1;
+            config.startIdx = TotalCount - 1;
         }
         if (config.startIdx < 0)
         {
@@ -286,38 +289,51 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
         {
             case Dir.Horizontal:
                 {
-                    pos.x -= config.startIdx * (config.spacing + config.cellSize.x);
+                    pos.x -= config.startIdx * (config.spacing.x + config.cellSize.x);
+                    pos.y += config.cellSize.y * config.fixedRowOrColumnCount + config.spacing.y * (config.fixedRowOrColumnCount - 1);
+                    pos.y *= 0.5f;
                 }
                 break;
             case Dir.Vertical:
                 {
-                    pos.y += config.startIdx * (config.spacing + config.cellSize.x);
+                    pos.x -= config.cellSize.x * config.fixedRowOrColumnCount + config.spacing.x * (config.fixedRowOrColumnCount - 1);
+                    pos.y += config.startIdx * (config.spacing.y + config.cellSize.y);
+                    pos.x *= 0.5f;
                 }
                 break;
         }
         this.transform.localPosition = pos;
     }
 
+    private int DirLen
+    {
+        get
+        {
+            return (TotalCount / config.fixedRowOrColumnCount) + (TotalCount % config.fixedRowOrColumnCount == 0 ? 0 : 1);
+        }
+    }
+
     private void ResetDelta()
     {
-        Vector2 size = config.cellSize;
+        Vector2 size = config.cellSize * config.fixedRowOrColumnCount;
+        int dirLen = DirLen;
         switch (config.dir)
         {
             case Dir.Horizontal:
                 {
-                    size.x = TotalAmt * config.cellSize.x;
-                    if (TotalAmt > 0)
+                    size.x = dirLen * config.cellSize.x;
+                    if (dirLen > 0)
                     {
-                        size.x += (TotalAmt - 1) * config.spacing;
+                        size.x += (dirLen - 1) * config.spacing.x;
                     }
                 }
                 break;
             case Dir.Vertical:
                 {
-                    size.y = TotalAmt * config.cellSize.y;
-                    if (TotalAmt > 0)
+                    size.y = dirLen * config.cellSize.y;
+                    if (dirLen > 0)
                     {
-                        size.y += (TotalAmt - 1) * config.spacing;
+                        size.y += (dirLen - 1) * config.spacing.y;
                     }
                 }
                 break;
@@ -333,23 +349,31 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
 
     public class ConfigData
     {
-        public Dir dir = Dir.Horizontal;
-        public Vector2 cellSize = new Vector2(100f, 100f);
-        public float spacing = 10f;
         public Transform prefab;
 
-        /// <summary>
-        /// 一屏数量，取上整
-        /// </summary>
-        public int oneScreenAmt = 1;
+        public Dir dir = Dir.Horizontal;
+
+        public Vector2 cellSize = new Vector2(100f, 100f);
+
+        public Vector2 spacing = new Vector2(10, 10);
 
         /// <summary>
-        /// 额外缓存数量
+        /// 固定行数或列数
         /// </summary>
-        public int bufferHalfAmt = 0;
+        public int fixedRowOrColumnCount = 1;
 
         /// <summary>
-        /// 开始下标
+        /// 单位宽度可视数量，取上整
+        /// </summary>
+        public int fiexdDirViewCount = 1;
+
+        /// <summary>
+        /// 额外缓存的行数或列数
+        /// </summary>
+        public int viewCountHalfBuffer = 0;
+
+        /// <summary>
+        /// 开始下标，TODO:要改为进度
         /// </summary>
         public int startIdx = 0;
     }

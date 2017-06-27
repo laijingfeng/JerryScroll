@@ -54,12 +54,13 @@ public class Sample : MonoBehaviour
                 layoutH.DoInit(new Layout.ConfigData()
                 {
                     startIdx = 0,
-                    bufferHalfAmt = 1,
+                    viewCountHalfBuffer = 1,
                     cellSize = new Vector2(190, 190),
                     dir = Layout.Dir.Horizontal,
-                    oneScreenAmt = 3,
+                    fiexdDirViewCount = 3,
                     prefab = prefab.transform,
-                    spacing = 10,
+                    spacing = new Vector2(10, 10),
+                    fixedRowOrColumnCount = 1,
                 }, datas);
             }
             else
@@ -72,12 +73,13 @@ public class Sample : MonoBehaviour
                 layoutV.DoInit(new Layout.ConfigData()
                 {
                     startIdx = 0,
-                    bufferHalfAmt = 1,
+                    viewCountHalfBuffer = 1,
                     cellSize = new Vector2(190, 190),
                     dir = Layout.Dir.Vertical,
-                    oneScreenAmt = 3,
+                    fiexdDirViewCount = 3,
                     prefab = prefab.transform,
-                    spacing = 10,
+                    spacing = new Vector2(10, 10),
+                    fixedRowOrColumnCount = 2,
                 }, datas);
             }
             else
@@ -110,14 +112,30 @@ public class Sample : MonoBehaviour
         });
     }
 
-    private static int SortCmp1(Item.ItemData a, Item.ItemData b)
+    void Update()
     {
-        return a.id > b.id ? 1 : -1;
     }
 
+    /// <summary>
+    /// 升序
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    private static int SortCmp1(Item.ItemData a, Item.ItemData b)
+    {
+        return a.id < b.id ? -1 : 1;
+    }
+
+    /// <summary>
+    /// 降序
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
     private static int SortCmp2(Item.ItemData a, Item.ItemData b)
     {
-        return a.id < b.id ? 1 : -1;
+        return a.id > b.id ? -1 : 1;
     }
 
     private void RefreshDataNum()
