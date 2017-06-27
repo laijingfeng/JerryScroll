@@ -53,14 +53,15 @@ public class Sample : MonoBehaviour
             {
                 layoutH.DoInit(new Layout.ConfigData()
                 {
-                    startIdx = 0,
+                    startProgress = 0,
                     viewCountHalfBuffer = 1,
                     cellSize = new Vector2(190, 190),
                     dir = Layout.Dir.Horizontal,
-                    fiexdDirViewCount = 3,
+                    fiexdDirViewCountF = 2.5f,
                     prefab = prefab.transform,
                     spacing = new Vector2(10, 10),
                     fixedRowOrColumnCount = 1,
+                    workCountPerFrame = 0,
                 }, datas);
             }
             else
@@ -72,14 +73,15 @@ public class Sample : MonoBehaviour
             {
                 layoutV.DoInit(new Layout.ConfigData()
                 {
-                    startIdx = 0,
+                    startProgress = 1,
                     viewCountHalfBuffer = 1,
                     cellSize = new Vector2(190, 190),
                     dir = Layout.Dir.Vertical,
-                    fiexdDirViewCount = 3,
+                    fiexdDirViewCountF = 3.5f,
                     prefab = prefab.transform,
                     spacing = new Vector2(10, 10),
-                    fixedRowOrColumnCount = 2,
+                    fixedRowOrColumnCount = 3,
+                    workCountPerFrame = 3,
                 }, datas);
             }
             else

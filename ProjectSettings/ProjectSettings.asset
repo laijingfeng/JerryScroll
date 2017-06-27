@@ -158,7 +158,7 @@ PlayerSettings:
   AndroidTargetDevice: 3
   AndroidSplashScreenScale: 2
   androidSplashScreen: {fileID: 2800000, guid: 89e4053f722c9574ca0d6e12bf8defcb, type: 3}
-  AndroidKeystoreName: E:/Jerry/JerryScroll/jerry.keystore
+  AndroidKeystoreName: D:/NewGitHub/JerryScroll/jerry.keystore
   AndroidKeyaliasName: 
   AndroidTVCompatibility: 0
   AndroidIsGame: 1

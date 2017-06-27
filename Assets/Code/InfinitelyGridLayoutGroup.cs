@@ -30,6 +30,11 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     private ConfigData config = new ConfigData();
 
     /// <summary>
+    /// 单位宽度可视数量，取上整
+    /// </summary>
+    private int fiexdDirViewCount = 1;
+
+    /// <summary>
     /// 数据
     /// </summary>
     private List<F> datas = new List<F>();
@@ -78,7 +83,6 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         if (tdatas != null)
         {
             datas = tdatas;
-            CheckStartIdx();
             ResetDelta();
             CalFirstIdx();
             RefreshData(true);
@@ -124,11 +128,13 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                 break;
         }
         rectTran.pivot = new Vector2(0, 1);
+        fiexdDirViewCount = Mathf.CeilToInt(config.fiexdDirViewCountF);
+        config.startProgress = Mathf.Clamp01(config.startProgress);
+
         itemList.Clear();
         JerryUtil.DestroyAllChildren(this.transform);
 
         curFirstIdx = -1;
-        CheckStartIdx();
         ResetPos();
         ResetDelta();
 
@@ -150,6 +156,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         }
     }
 
+    private bool updateDirty = false;
     private void CheckUpdate()
     {
         if (!awaked
@@ -163,15 +170,25 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         if (curFirstIdx != calFirstIdxIdx)
         {
             curFirstIdx = calFirstIdxIdx;
+            updateDirty = true;
+        }
+
+        if (updateDirty)
+        {
             RefreshData();
         }
     }
 
     private int curLastIdx;
     private T tmpLayoutItem;
+    private int updateWork;
+
     private void RefreshData(bool forceUpdate = false)
     {
-        curLastIdx = curFirstIdx + (config.fiexdDirViewCount + config.viewCountHalfBuffer * 2) * config.fixedRowOrColumnCount - 1;
+        updateWork = 0;
+        updateDirty = false;
+
+        curLastIdx = curFirstIdx + (fiexdDirViewCount + config.viewCountHalfBuffer * 2) * config.fixedRowOrColumnCount - 1;
         if (curLastIdx >= TotalCount)
         {
             curLastIdx = TotalCount - 1;
@@ -197,6 +214,15 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                 && itemList.Exists((x) => x.GetGridIdx() == i))
             {
                 continue;
+            }
+
+            //还有新的任务
+            if (!forceUpdate
+                && config.workCountPerFrame > 0
+                && updateWork > config.workCountPerFrame)
+            {
+                updateDirty = true;
+                break;
             }
 
             tmpLayoutItem = itemList.Find((x) => x.GetGridState() == false);
@@ -229,18 +255,23 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
             }
             tmpLayoutItem.SetGridState(true);
             tmpLayoutItem.SetGridIdx(i, Idx2LocalPos(i), datas[i]);
+
+            updateWork++;
         }
 
-        for (int i = 0, imax = itemList.Count; i < imax; i++)
+        if (!updateDirty)
         {
-            if (itemList[i].GetGridState() == false
-                && itemList[i].gameObject != null)
+            for (int i = 0, imax = itemList.Count; i < imax; i++)
             {
-                GameObject.Destroy(itemList[i].gameObject);
+                if (itemList[i].GetGridState() == false
+                    && itemList[i].gameObject != null)
+                {
+                    GameObject.Destroy(itemList[i].gameObject);
 
-                itemList.RemoveAt(i);
-                i--;
-                imax--;
+                    itemList.RemoveAt(i);
+                    i--;
+                    imax--;
+                }
             }
         }
     }
@@ -269,26 +300,26 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         return ret;
     }
 
-    private void CheckStartIdx()
-    {
-        if (config.startIdx >= TotalCount)
-        {
-            config.startIdx = TotalCount - 1;
-        }
-        if (config.startIdx < 0)
-        {
-            config.startIdx = 0;
-        }
-    }
-
     private void ResetPos()
     {
         Vector3 pos = Vector3.zero;
+        float dirLen = DirLen * 1.0f - config.fiexdDirViewCountF;
+        if(dirLen < 0)
+        {
+            dirLen = 0;
+        }
+        float fDirLen = 0;
         switch (config.dir)
         {
             case Dir.Horizontal:
                 {
-                    pos.x -= config.startIdx * (config.spacing.x + config.cellSize.x);
+                    fDirLen = config.cellSize.x * dirLen;
+                    if(dirLen > 1)
+                    {
+                        fDirLen += config.spacing.x * (dirLen - 1);
+                    }
+                    pos.x -= fDirLen * config.startProgress;
+
                     pos.y += config.cellSize.y * config.fixedRowOrColumnCount + config.spacing.y * (config.fixedRowOrColumnCount - 1);
                     pos.y *= 0.5f;
                 }
@@ -296,8 +327,15 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
             case Dir.Vertical:
                 {
                     pos.x -= config.cellSize.x * config.fixedRowOrColumnCount + config.spacing.x * (config.fixedRowOrColumnCount - 1);
-                    pos.y += config.startIdx * (config.spacing.y + config.cellSize.y);
                     pos.x *= 0.5f;
+
+                    fDirLen = config.cellSize.y * dirLen;
+                    if (dirLen > 1)
+                    {
+                        fDirLen += config.spacing.y * (dirLen - 1);
+                    }
+                    pos.y += fDirLen * config.startProgress;
+                    
                 }
                 break;
         }
@@ -362,18 +400,20 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         public int fixedRowOrColumnCount = 1;
 
         /// <summary>
-        /// 单位宽度可视数量，取上整
+        /// 单位宽度可视数量
         /// </summary>
-        public int fiexdDirViewCount = 1;
+        public float fiexdDirViewCountF = 1f;
 
         /// <summary>
         /// 额外缓存的行数或列数
         /// </summary>
         public int viewCountHalfBuffer = 0;
 
+        public float startProgress = 0;
+
         /// <summary>
-        /// 开始下标，TODO:要改为进度
+        /// 0无限
         /// </summary>
-        public int startIdx = 0;
+        public int workCountPerFrame = 0;
     }
 }
