@@ -46,6 +46,8 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
         CheckUpdate();
     }
 
+    #region 对外接口
+
     public void DoInit(ConfigData tconfig, List<F> tdatas)
     {
         config = tconfig;
@@ -53,6 +55,51 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
         inited = true;
         TryWork();
     }
+
+    /// <summary>
+    /// 数据有变化，内容和数量，参数是新数据
+    /// </summary>
+    /// <param name="tdatas"></param>
+    public void ChangeDatas(List<F> tdatas = null)
+    {
+        if (!awaked
+            || !inited
+            || !ready)
+        {
+            return;
+        }
+        if (tdatas != null)
+        {
+            datas = tdatas;
+        }
+        //TODO
+    }
+
+    /// <summary>
+    /// <para>数据内容有更新，刷新到UI上</para>
+    /// <para>数据内容变更，数据重新排序</para>
+    /// <para>idx是空表示希望刷新所有</para>
+    /// </summary>
+    /// <param name="idx"></param>
+    public void RefreshItemDatas(List<int> idxs = null)
+    {
+        if (!awaked
+            || !inited
+            || !ready)
+        {
+            return;
+        }
+
+        foreach (T t in itemList)
+        {
+            if(idxs == null || idxs.Contains(t.GetGridIdx()))
+            {
+                t.TryRefreshUI(datas[t.GetGridIdx()]);
+            }
+        }
+    }
+
+    #endregion 对外接口
 
     private void TryWork()
     {

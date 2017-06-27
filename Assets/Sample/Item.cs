@@ -14,14 +14,14 @@ public class Item : LayoutItem
     {
         head = this.transform.FindChild("head");
         id = this.transform.FindChild("id").GetComponent<Text>();
-        num = this.transform.FindChild("id").GetComponent<Text>();
+        num = this.transform.FindChild("num").GetComponent<Text>();
     }
 
     public override void TryRefreshUI(ILayoutItemData data)
     {
-        Debug.LogWarning("xx " + data);
-
         curData = data as ItemData;
+
+        //Debug.LogWarning("xx " + curData.id + " " + curData.num);
 
         JerryUtil.CloneGo(new JerryUtil.CloneGoData()
         {
