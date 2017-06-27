@@ -8,6 +8,7 @@ public class Sample : MonoBehaviour
     public Transform layoutHContent;
     public Transform layoutVContent;
     public Button genData;
+    public Button sortData;
     public Button addData;
     public Button minusData;
     public Text dataNum;
@@ -18,36 +19,71 @@ public class Sample : MonoBehaviour
     private Layout layoutH;
     private Layout layoutV;
 
+    private bool sortFlag = true;
+
     void Awake()
     {
         layoutH = layoutHContent.gameObject.AddComponent<Layout>();
         layoutV = layoutVContent.gameObject.AddComponent<Layout>();
         RefreshDataNum();
 
+        sortData.onClick.AddListener(() =>
+        {
+            if (datas.Count <= 0)
+            {
+                return;
+            }
+            if (sortFlag)
+            {
+                datas.Sort(SortCmp1);
+            }
+            else
+            {
+                datas.Sort(SortCmp2);
+            }
+            sortFlag = !sortFlag;
+            layoutH.RefreshDatas();
+            layoutV.RefreshDatas();
+        });
+
         genData.onClick.AddListener(() =>
         {
             GenDatas();
-            layoutH.DoInit(new Layout.ConfigData()
+            if (!layoutH.Inited)
             {
-                startIdx = 0,
-                bufferHalfAmt = 1,
-                cellSize = new Vector2(190, 190),
-                dir = Layout.Dir.Horizontal,
-                oneScreenAmt = 3,
-                prefab = prefab.transform,
-                spacing = 10,
-            }, datas);
+                layoutH.DoInit(new Layout.ConfigData()
+                {
+                    startIdx = 0,
+                    bufferHalfAmt = 1,
+                    cellSize = new Vector2(190, 190),
+                    dir = Layout.Dir.Horizontal,
+                    oneScreenAmt = 3,
+                    prefab = prefab.transform,
+                    spacing = 10,
+                }, datas);
+            }
+            else
+            {
+                layoutH.RefreshDatas(datas);
+            }
 
-            layoutV.DoInit(new Layout.ConfigData()
+            if (!layoutV.Inited)
             {
-                startIdx = 0,
-                bufferHalfAmt = 1,
-                cellSize = new Vector2(190, 190),
-                dir = Layout.Dir.Vertical,
-                oneScreenAmt = 3,
-                prefab = prefab.transform,
-                spacing = 10,
-            }, datas);
+                layoutV.DoInit(new Layout.ConfigData()
+                {
+                    startIdx = 0,
+                    bufferHalfAmt = 1,
+                    cellSize = new Vector2(190, 190),
+                    dir = Layout.Dir.Vertical,
+                    oneScreenAmt = 3,
+                    prefab = prefab.transform,
+                    spacing = 10,
+                }, datas);
+            }
+            else
+            {
+                layoutV.RefreshDatas(datas);
+            }
         });
 
         addData.onClick.AddListener(() =>
@@ -74,26 +110,26 @@ public class Sample : MonoBehaviour
         });
     }
 
+    private static int SortCmp1(Item.ItemData a, Item.ItemData b)
+    {
+        return a.id > b.id ? 1 : -1;
+    }
+
+    private static int SortCmp2(Item.ItemData a, Item.ItemData b)
+    {
+        return a.id < b.id ? 1 : -1;
+    }
+
     private void RefreshDataNum()
     {
         dataNum.text = dataAmt.ToString();
-    }
-
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.M))
-        {
-            datas[0].id += 100;
-            //Debug.LogWarning(datas[0].id + " " + datas[0].num);
-            layoutH.RefreshItemDatas();
-            layoutV.RefreshItemDatas();
-        }
     }
 
     #region 随机数据
 
     private void GenDatas()
     {
+        idKey = 0;
         datas.Clear();
         for (int i = 0; i < dataAmt; i++)
         {

@@ -19,6 +19,13 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
 
     private bool awaked = false;
     private bool inited = false;
+    public bool Inited
+    {
+        get
+        {
+            return inited;
+        }
+    }
     private bool ready = false;
 
     private ConfigData config = new ConfigData();
@@ -57,10 +64,11 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
     }
 
     /// <summary>
-    /// 数据有变化，内容和数量，参数是新数据
+    /// 
     /// </summary>
-    /// <param name="tdatas"></param>
-    public void ChangeDatas(List<F> tdatas = null)
+    /// <param name="tdatas">数据数量有变化，全部刷新</param>
+    /// <param name="idxs">数据内容有变化(内容修改/排序修改)，可单点刷新</param>
+    public void RefreshDatas(List<F> tdatas = null, List<int> idxs = null)
     {
         if (!awaked
             || !inited
@@ -71,30 +79,19 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
         if (tdatas != null)
         {
             datas = tdatas;
+            CheckStartIdx();
+            ResetDelta();
+            CalFirstIdx();
+            RefreshData(true);
         }
-        //TODO
-    }
-
-    /// <summary>
-    /// <para>数据内容有更新，刷新到UI上</para>
-    /// <para>数据内容变更，数据重新排序</para>
-    /// <para>idx是空表示希望刷新所有</para>
-    /// </summary>
-    /// <param name="idx"></param>
-    public void RefreshItemDatas(List<int> idxs = null)
-    {
-        if (!awaked
-            || !inited
-            || !ready)
+        else
         {
-            return;
-        }
-
-        foreach (T t in itemList)
-        {
-            if(idxs == null || idxs.Contains(t.GetGridIdx()))
+            foreach (T t in itemList)
             {
-                t.TryRefreshUI(datas[t.GetGridIdx()]);
+                if (idxs == null || idxs.Contains(t.GetGridIdx()))
+                {
+                    t.TryRefreshUI(datas[t.GetGridIdx()]);
+                }
             }
         }
     }
@@ -134,15 +131,7 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
         JerryUtil.DestroyAllChildren(this.transform);
 
         curFirstIdx = -1;
-
-        if (config.startIdx >= TotalAmt)
-        {
-            config.startIdx = TotalAmt - 1;
-        }
-        if (config.startIdx < 0)
-        {
-            config.startIdx = 0;
-        }
+        CheckStartIdx();
         ResetPos();
         ResetDelta();
 
@@ -182,7 +171,7 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
 
     private int curLastIdx;
     private T tmpLayoutItem;
-    private void RefreshData()
+    private void RefreshData(bool forceUpdate = false)
     {
         curLastIdx = curFirstIdx + config.oneScreenAmt + config.bufferHalfAmt * 2;
         if (curLastIdx >= TotalAmt)
@@ -192,7 +181,8 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
 
         foreach (T item in itemList)
         {
-            if (item.GetGridIdx() >= curFirstIdx
+            if (!forceUpdate
+                && item.GetGridIdx() >= curFirstIdx
                 && item.GetGridIdx() <= curLastIdx)
             {
                 item.SetGridState(true);
@@ -205,7 +195,8 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
 
         for (int i = curFirstIdx; i <= curLastIdx; i++)
         {
-            if (itemList.Exists((x) => x.GetGridIdx() == i))
+            if (!forceUpdate
+                && itemList.Exists((x) => x.GetGridIdx() == i))
             {
                 continue;
             }
@@ -242,6 +233,19 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
             tmpLayoutItem.SetGridState(true);
             tmpLayoutItem.SetGridIdx(i, CalGridPos(i), datas[i]);
         }
+
+        for (int i = 0, imax = itemList.Count; i < imax; i++)
+        {
+            if (itemList[i].GetGridState() == false
+                && itemList[i].gameObject != null)
+            {
+                GameObject.Destroy(itemList[i].gameObject);
+
+                itemList.RemoveAt(i);
+                i--;
+                imax--;
+            }
+        }
     }
 
     private Vector3 CalGridPos(int idx)
@@ -261,6 +265,18 @@ public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
                 break;
         }
         return ret;
+    }
+
+    private void CheckStartIdx()
+    {
+        if (config.startIdx >= TotalAmt)
+        {
+            config.startIdx = TotalAmt - 1;
+        }
+        if (config.startIdx < 0)
+        {
+            config.startIdx = 0;
+        }
     }
 
     private void ResetPos()
