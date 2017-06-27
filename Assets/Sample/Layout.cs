@@ -1,5 +1,5 @@
 ﻿
-public class Layout : InfinitelyLinearGridLayoutGroup<Item, Item.ItemData>
+public class Layout : InfinitelyGridLayoutGroup<Item, Item.ItemData>
 {
     
 }

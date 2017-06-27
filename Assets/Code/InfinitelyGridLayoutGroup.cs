@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Jerry;
 using UnityEngine;
 
-public class InfinitelyLinearGridLayoutGroup<T, F> : MonoBehaviour
+public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     where T : LayoutItem
     where F : ILayoutItemData
 {
