@@ -51,12 +51,12 @@ public class Sample : MonoBehaviour
             GenDatas();
             if (!layoutH.Inited)
             {
-                layoutH.DoInit(new Layout.ConfigData()
+                layoutH.DoInit(new LayoutConfig()
                 {
                     startProgress = 0,
                     viewCountHalfBuffer = 1,
                     cellSize = new Vector2(190, 190),
-                    dir = Layout.Dir.Horizontal,
+                    dir = LayoutDir.Horizontal,
                     fiexdDirViewCountF = 2.5f,
                     prefab = prefab.transform,
                     spacing = new Vector2(10, 10),
@@ -71,13 +71,13 @@ public class Sample : MonoBehaviour
 
             if (!layoutV.Inited)
             {
-                layoutV.DoInit(new Layout.ConfigData()
+                layoutV.DoInit(new LayoutConfig()
                 {
                     startProgress = 1,
                     viewCountHalfBuffer = 1,
                     cellSize = new Vector2(190, 190),
-                    dir = Layout.Dir.Vertical,
-                    fiexdDirViewCountF = 3.5f,
+                    dir = LayoutDir.Vertical,
+                    fiexdDirViewCountF = 2.5f,
                     prefab = prefab.transform,
                     spacing = new Vector2(10, 10),
                     fixedRowOrColumnCount = 3,
