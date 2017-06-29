@@ -9,18 +9,39 @@ public class Item : LayoutItem
     private Text num;
 
     private ItemData curData = null;
+    private ItemData newData = null;
     private ItemDataChange dataChange = new ItemDataChange();
+    private bool isDataDirty = false;
+    private bool _awaked = false;
 
     void Awake()
     {
         head = this.transform.FindChild("head");
         id = this.transform.FindChild("id").GetComponent<Text>();
         num = this.transform.FindChild("num").GetComponent<Text>();
+        _awaked = true;
+        TryFillData();
     }
 
     public override void TryRefreshUI(ILayoutItemData data)
     {
-        curData = dataChange.Diff(curData, data as ItemData);
+        if (data == null)
+        {
+            return;
+        }
+        newData = data as ItemData;
+        isDataDirty = true;
+    }
+
+    private void TryFillData()
+    {
+        if (!_awaked
+            || !isDataDirty)
+        {
+            return;
+        }
+        isDataDirty = false;
+        curData = dataChange.Diff(curData, newData);
 
         if (dataChange.headChanged)
         {
@@ -49,7 +70,7 @@ public class Item : LayoutItem
         public bool headChanged = false;
         public ItemData Diff(ItemData oriD, ItemData newD)
         {
-            headChanged = (oriD == null || DiffUtil.DiffStr(oriD.head, newD.head));
+            headChanged = (oriD == null || LayoutItem.ValDiff<string>(oriD.head, newD.head));
             return newD;
         }
     }

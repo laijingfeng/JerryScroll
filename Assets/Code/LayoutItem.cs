@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public interface ILayoutItemData
 {
@@ -33,16 +34,14 @@ public abstract class LayoutItem : MonoBehaviour
     {
         return gridState;
     }
-}
 
-public class DiffUtil
-{
-    public static bool DiffStr(string a, string b)
+    public static bool ValDiff<T>(T a, T b)
     {
-        if (a == b || string.IsNullOrEmpty(a))
+        if (a == null)
         {
-            return false;
+            return !(b == null);
         }
+        //备注：为null的string执行Equals要报错的
         return !a.Equals(b);
     }
 }
@@ -52,7 +51,7 @@ public class LayoutConfig
 {
     public Transform prefab;
 
-    public LayoutDir dir = LayoutDir.Horizontal;
+    public GridLayoutGroup.Axis dir = GridLayoutGroup.Axis.Horizontal;
 
     public Vector2 cellSize = new Vector2(100f, 100f);
 
@@ -79,10 +78,4 @@ public class LayoutConfig
     /// 0无限
     /// </summary>
     public int workCountPerFrame = 0;
-}
-
-public enum LayoutDir
-{
-    Horizontal = 0,
-    Vertical,
 }

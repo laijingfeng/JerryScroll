@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Jerry;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     where T : LayoutItem
@@ -75,8 +76,9 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     /// 
     /// </summary>
     /// <param name="tdatas">数据数量有变化，全部刷新</param>
+    /// <param name="progress">辅助第一个参数，可以设置进度</param>
     /// <param name="idxs">数据内容有变化(内容修改/排序修改)，可单点刷新</param>
-    public void RefreshDatas(List<F> tdatas = null, List<int> idxs = null)
+    public void RefreshDatas(List<F> tdatas = null, float progress = -1f, List<int> idxs = null)
     {
         if (!awaked
             || !inited
@@ -87,6 +89,11 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         if (tdatas != null)
         {
             datas = tdatas;
+            if (progress >= 0)
+            {
+                config.startProgress = Mathf.Clamp01(progress);
+                ResetPos();
+            }
             ResetDelta();
             CalFirstIdx();
             RefreshData(true);
@@ -103,6 +110,52 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 当前进度
+    /// </summary>
+    /// <returns></returns>
+    public float CurProgress()
+    {
+        Vector3 pos = this.transform.localPosition;
+        float dirLen = DirLen * 1.0f - config.fiexdDirViewCountF;
+        if (dirLen < 0)
+        {
+            dirLen = 0;
+        }
+        float fDirLen = 0;
+        float ret = 0;
+        switch (config.dir)
+        {
+            case GridLayoutGroup.Axis.Horizontal:
+                {
+                    fDirLen = config.cellSize.x * dirLen;
+                    if (dirLen > 1)
+                    {
+                        fDirLen += config.spacing.x * (dirLen - 1);
+                    }
+                    if (fDirLen > 0)
+                    {
+                        ret = Mathf.Clamp01(-pos.x / fDirLen);
+                    }
+                }
+                break;
+            case GridLayoutGroup.Axis.Vertical:
+                {
+                    fDirLen = config.cellSize.y * dirLen;
+                    if (dirLen > 1)
+                    {
+                        fDirLen += config.spacing.y * (dirLen - 1);
+                    }
+                    if (fDirLen > 0)
+                    {
+                        ret = Mathf.Clamp01(pos.y / fDirLen);
+                    }
+                }
+                break;
+        }
+        return ret;
+    }
+
     #endregion 对外接口
 
     private void TryWork()
@@ -116,14 +169,14 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         rectTran = this.transform as RectTransform;
         switch (config.dir)
         {
-            case LayoutDir.Horizontal:
+            case GridLayoutGroup.Axis.Horizontal:
                 {
                     (rectTran.parent as RectTransform).pivot = new Vector2(0, 0.5f);
                     rectTran.anchorMin = new Vector2(0, 0.5f);
                     rectTran.anchorMax = new Vector2(0, 0.5f);
                 }
                 break;
-            case LayoutDir.Vertical:
+            case GridLayoutGroup.Axis.Vertical:
                 {
                     (rectTran.parent as RectTransform).pivot = new Vector2(0.5f, 1.0f);
                     rectTran.anchorMin = new Vector2(0.5f, 1.0f);
@@ -152,9 +205,9 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     private int calFirstIdxIdx;
     private void CalFirstIdx()
     {
-        calFirstIdxPos = config.dir == LayoutDir.Horizontal ? -this.transform.localPosition.x : this.transform.localPosition.y;
-        calFirstIdxSize = config.dir == LayoutDir.Horizontal ? config.cellSize.x : config.cellSize.y;
-        calFirstIdxSpacing = config.dir == LayoutDir.Horizontal ? config.spacing.x : config.spacing.y;
+        calFirstIdxPos = config.dir == GridLayoutGroup.Axis.Horizontal ? -this.transform.localPosition.x : this.transform.localPosition.y;
+        calFirstIdxSize = config.dir == GridLayoutGroup.Axis.Horizontal ? config.cellSize.x : config.cellSize.y;
+        calFirstIdxSpacing = config.dir == GridLayoutGroup.Axis.Horizontal ? config.spacing.x : config.spacing.y;
         calFirstIdxIdx = (int)(calFirstIdxPos / (calFirstIdxSize + calFirstIdxSpacing)) * config.fixedRowOrColumnCount;
         calFirstIdxIdx -= config.viewCountHalfBuffer * config.fixedRowOrColumnCount;
         if (calFirstIdxIdx < 0)
@@ -245,13 +298,13 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                 });
                 switch (config.dir)
                 {
-                    case LayoutDir.Horizontal:
+                    case GridLayoutGroup.Axis.Horizontal:
                         {
                             (tmpLayoutItem.transform as RectTransform).anchorMin = new Vector2(0.5f, 0.5f);
                             (tmpLayoutItem.transform as RectTransform).anchorMax = new Vector2(0.5f, 0.5f);
                         }
                         break;
-                    case LayoutDir.Vertical:
+                    case GridLayoutGroup.Axis.Vertical:
                         {
                             (tmpLayoutItem.transform as RectTransform).anchorMin = new Vector2(0.5f, 0.5f);
                             (tmpLayoutItem.transform as RectTransform).anchorMax = new Vector2(0.5f, 0.5f);
@@ -290,13 +343,13 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         int gridX = 0, gridY = 0;
         switch (config.dir)
         {
-            case LayoutDir.Horizontal:
+            case GridLayoutGroup.Axis.Horizontal:
                 {
                     gridX = idx / config.fixedRowOrColumnCount;
                     gridY = idx % config.fixedRowOrColumnCount;
                 }
                 break;
-            case LayoutDir.Vertical:
+            case GridLayoutGroup.Axis.Vertical:
                 {
                     gridX = idx % config.fixedRowOrColumnCount;
                     gridY = idx / config.fixedRowOrColumnCount;
@@ -319,7 +372,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         float fDirLen = 0;
         switch (config.dir)
         {
-            case LayoutDir.Horizontal:
+            case GridLayoutGroup.Axis.Horizontal:
                 {
                     fDirLen = config.cellSize.x * dirLen;
                     if (dirLen > 1)
@@ -332,7 +385,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     pos.y *= 0.5f;
                 }
                 break;
-            case LayoutDir.Vertical:
+            case GridLayoutGroup.Axis.Vertical:
                 {
                     pos.x -= config.cellSize.x * config.fixedRowOrColumnCount + config.spacing.x * (config.fixedRowOrColumnCount - 1);
                     pos.x *= 0.5f;
@@ -364,7 +417,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         int dirLen = DirLen;
         switch (config.dir)
         {
-            case LayoutDir.Horizontal:
+            case GridLayoutGroup.Axis.Horizontal:
                 {
                     size.x = dirLen * config.cellSize.x;
                     if (dirLen > 0)
@@ -373,7 +426,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     }
                 }
                 break;
-            case LayoutDir.Vertical:
+            case GridLayoutGroup.Axis.Vertical:
                 {
                     size.y = dirLen * config.cellSize.y;
                     if (dirLen > 0)
@@ -427,13 +480,13 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
 
             switch (config.dir)
             {
-                case LayoutDir.Horizontal:
+                case GridLayoutGroup.Axis.Horizontal:
                     {
                         (go.transform as RectTransform).anchorMin = new Vector2(0.5f, 0.5f);
                         (go.transform as RectTransform).anchorMax = new Vector2(0.5f, 0.5f);
                     }
                     break;
-                case LayoutDir.Vertical:
+                case GridLayoutGroup.Axis.Vertical:
                     {
                         (go.transform as RectTransform).anchorMin = new Vector2(0.5f, 0.5f);
                         (go.transform as RectTransform).anchorMax = new Vector2(0.5f, 0.5f);
