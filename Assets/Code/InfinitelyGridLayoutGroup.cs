@@ -480,10 +480,20 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     {
                         size.x += (dirLen - 1) * config.spacing.x;
                     }
+
+                    if (config.fixedRowOrColumnCount > 1)
+                    {
+                        size.y += (config.fixedRowOrColumnCount - 1) * config.spacing.y;
+                    }
                 }
                 break;
             case GridLayoutGroup.Axis.Vertical:
                 {
+                    if (config.fixedRowOrColumnCount > 1)
+                    {
+                        size.x += (config.fixedRowOrColumnCount - 1) * config.spacing.x;
+                    }
+
                     size.y = dirLen * config.cellSize.y;
                     if (dirLen > 0)
                     {

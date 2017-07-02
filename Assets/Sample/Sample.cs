@@ -23,7 +23,7 @@ public class Sample : MonoBehaviour
     private Layout layoutV;
 
     private bool sortFlag = true;
-    private float lastProgressV = 1f;
+    private float lastProgressV = 0.9f;
 
     void Awake()
     {
