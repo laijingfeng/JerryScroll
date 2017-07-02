@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Jerry;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,21 +12,26 @@ public class Sample : MonoBehaviour
     public Button sortData;
     public Button addData;
     public Button minusData;
-    public Text dataNum;
+    public InputField dataNum;
+
+    public Slider layoutHProgress;
+    public InputField layoutHSpacing;
 
     private List<Item.ItemData> datas = new List<Item.ItemData>();
-    private int dataAmt = 0;
 
     private Layout layoutH;
     private Layout layoutV;
 
     private bool sortFlag = true;
+    private float lastProgressV = 1f;
 
     void Awake()
     {
+        layoutHSpacing.text = "0";
+
         layoutH = layoutHContent.gameObject.AddComponent<Layout>();
         layoutV = layoutVContent.gameObject.AddComponent<Layout>();
-        RefreshDataNum();
+        RefreshDataNum(0);
 
         sortData.onClick.AddListener(() =>
         {
@@ -49,35 +55,40 @@ public class Sample : MonoBehaviour
         genData.onClick.AddListener(() =>
         {
             GenDatas();
+
             if (!layoutH.Inited)
             {
                 layoutH.DoInit(new LayoutConfig()
                 {
-                    startProgress = 0,
+                    startProgress = layoutHProgress.value,
                     viewCountHalfBuffer = 1,
                     cellSize = new Vector2(190, 190),
                     dir = GridLayoutGroup.Axis.Horizontal,
-                    fiexdDirViewCountF = 2.5f,
+                    viewMaskLen = 590f,
                     prefab = prefab.transform,
-                    spacing = new Vector2(10, 10),
+                    spacing = new Vector2(JerryUtil.String2TArray<float>(layoutHSpacing.text)[0], JerryUtil.String2TArray<float>(layoutHSpacing.text)[0]),
                     fixedRowOrColumnCount = 1,
                     workCountPerFrame = 0,
                 }, datas);
             }
             else
             {
-                layoutH.RefreshDatas(datas);
+                layoutH.RefreshDatas(datas, new ModifyConfig()
+                {
+                    progress = layoutHProgress.value,
+                    spacing = new Vector2(JerryUtil.String2TArray<float>(layoutHSpacing.text)[0], JerryUtil.String2TArray<float>(layoutHSpacing.text)[0]),
+                });
             }
 
             if (!layoutV.Inited)
             {
                 layoutV.DoInit(new LayoutConfig()
                 {
-                    startProgress = 1,
+                    startProgress = lastProgressV,
                     viewCountHalfBuffer = 1,
                     cellSize = new Vector2(190, 190),
                     dir = GridLayoutGroup.Axis.Vertical,
-                    fiexdDirViewCountF = 2.5f,
+                    viewMaskLen = 500f,
                     prefab = prefab.transform,
                     spacing = new Vector2(10, 10),
                     fixedRowOrColumnCount = 3,
@@ -86,31 +97,24 @@ public class Sample : MonoBehaviour
             }
             else
             {
+                lastProgressV = layoutV.CurProgress();
+
                 layoutV.RefreshDatas(datas);
             }
         });
 
         addData.onClick.AddListener(() =>
         {
-            if (dataAmt > 100000)
+            if (GetDataNum() > 100000)
             {
                 return;
             }
-            if (dataAmt == 0)
-            {
-                dataAmt++;
-            }
-            else
-            {
-                dataAmt *= 2;
-            }
-            RefreshDataNum();
+            RefreshDataNum(GetDataNum() == 0 ? 1 : GetDataNum() * 2);
         });
 
         minusData.onClick.AddListener(() =>
         {
-            dataAmt /= 2;
-            RefreshDataNum();
+            RefreshDataNum(GetDataNum() / 2);
         });
     }
 
@@ -118,9 +122,14 @@ public class Sample : MonoBehaviour
     {
     }
 
-    private void RefreshDataNum()
+    private void RefreshDataNum(int num)
     {
-        dataNum.text = dataAmt.ToString();
+        dataNum.text = num.ToString();
+    }
+
+    private int GetDataNum()
+    {
+        return JerryUtil.String2TArray<int>(dataNum.text)[0];
     }
 
     #region 随机数据
@@ -129,7 +138,7 @@ public class Sample : MonoBehaviour
     {
         idKey = 0;
         datas.Clear();
-        for (int i = 0; i < dataAmt; i++)
+        for (int i = 0; i < GetDataNum(); i++)
         {
             datas.Add(RandomOneData());
         }

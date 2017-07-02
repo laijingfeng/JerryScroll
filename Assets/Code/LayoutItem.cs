@@ -63,9 +63,9 @@ public class LayoutConfig
     public int fixedRowOrColumnCount = 1;
 
     /// <summary>
-    /// 单位宽度可视数量
+    /// 可视区域长度，用来算进度
     /// </summary>
-    public float fiexdDirViewCountF = 1f;
+    public float viewMaskLen = 1f;
 
     /// <summary>
     /// 额外缓存的行数或列数
@@ -78,4 +78,15 @@ public class LayoutConfig
     /// 0无限
     /// </summary>
     public int workCountPerFrame = 0;
+}
+
+/// <summary>
+/// <para>修改配置</para>
+/// <para>重刷数据的时候，可以修改部分配置</para>
+/// <para>特别是想复用之前的Prefab，有些细微配置不一样，可以用RefreshDatas而不用DoInit</para>
+/// </summary>
+public class ModifyConfig
+{
+    public float? progress = null;
+    public Vector2? spacing = null;
 }

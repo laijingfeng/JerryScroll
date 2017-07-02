@@ -31,14 +31,21 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     public LayoutConfig config = new LayoutConfig();
 
     /// <summary>
-    /// 单位宽度可视数量，取上整
+    /// 长度方向可视数量，取上整
     /// </summary>
     private int fiexdDirViewCount = 1;
+    /// <summary>
+    /// 长度方向可视数量，浮点数
+    /// </summary>
+    private float fiexdDirViewCountF = 1f;
 
     /// <summary>
     /// 数据
     /// </summary>
     private List<F> datas = new List<F>();
+    /// <summary>
+    /// 数据总量
+    /// </summary>
     private int TotalCount
     {
         get
@@ -76,9 +83,9 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     /// 
     /// </summary>
     /// <param name="tdatas">数据数量有变化，全部刷新</param>
-    /// <param name="progress">辅助第一个参数，可以设置进度</param>
+    /// <param name="modifyConfig">辅助第一个参数，调整部分配置</param>
     /// <param name="idxs">数据内容有变化(内容修改/排序修改)，可单点刷新</param>
-    public void RefreshDatas(List<F> tdatas = null, float progress = -1f, List<int> idxs = null)
+    public void RefreshDatas(List<F> tdatas = null, ModifyConfig modifyConfig = null, List<int> idxs = null)
     {
         if (!awaked
             || !inited
@@ -89,11 +96,41 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         if (tdatas != null)
         {
             datas = tdatas;
-            if (progress >= 0)
+
+            if (modifyConfig != null)
             {
-                config.startProgress = Mathf.Clamp01(progress);
-                ResetPos();
+                bool change = false;
+                if (modifyConfig.spacing.HasValue)
+                {
+                    config.spacing = modifyConfig.spacing.Value;
+                    switch (config.dir)
+                    {
+                        case GridLayoutGroup.Axis.Horizontal:
+                            {
+                                fiexdDirViewCountF = config.viewMaskLen / (config.cellSize.x + config.spacing.x);
+                            }
+                            break;
+                        case GridLayoutGroup.Axis.Vertical:
+                            {
+                                fiexdDirViewCountF = config.viewMaskLen / (config.cellSize.y + config.spacing.y);
+                            }
+                            break;
+                    }
+                    fiexdDirViewCount = Mathf.CeilToInt(fiexdDirViewCountF);
+                    change = true;
+                }
+                if (modifyConfig.progress.HasValue)
+                {
+                    config.startProgress = Mathf.Clamp01(modifyConfig.progress.Value);
+                    change = true;
+                }
+
+                if (change)
+                {
+                    ResetPos();
+                }
             }
+
             ResetDelta();
             CalFirstIdx();
             RefreshData(true);
@@ -117,11 +154,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     public float CurProgress()
     {
         Vector3 pos = this.transform.localPosition;
-        float dirLen = DirLen * 1.0f - config.fiexdDirViewCountF;
-        if (dirLen < 0)
-        {
-            dirLen = 0;
-        }
+        float dirLen = DirLen * 1.0f;
         float fDirLen = 0;
         float ret = 0;
         switch (config.dir)
@@ -133,6 +166,12 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     {
                         fDirLen += config.spacing.x * (dirLen - 1);
                     }
+                    fDirLen -= config.viewMaskLen;
+                    if (fDirLen < 0)
+                    {
+                        fDirLen = 0;
+                    }
+
                     if (fDirLen > 0)
                     {
                         ret = Mathf.Clamp01(-pos.x / fDirLen);
@@ -146,6 +185,12 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     {
                         fDirLen += config.spacing.y * (dirLen - 1);
                     }
+                    fDirLen -= config.viewMaskLen;
+                    if (fDirLen < 0)
+                    {
+                        fDirLen = 0;
+                    }
+
                     if (fDirLen > 0)
                     {
                         ret = Mathf.Clamp01(pos.y / fDirLen);
@@ -174,6 +219,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     (rectTran.parent as RectTransform).pivot = new Vector2(0, 0.5f);
                     rectTran.anchorMin = new Vector2(0, 0.5f);
                     rectTran.anchorMax = new Vector2(0, 0.5f);
+                    fiexdDirViewCountF = config.viewMaskLen / (config.cellSize.x + config.spacing.x);
                 }
                 break;
             case GridLayoutGroup.Axis.Vertical:
@@ -181,11 +227,13 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     (rectTran.parent as RectTransform).pivot = new Vector2(0.5f, 1.0f);
                     rectTran.anchorMin = new Vector2(0.5f, 1.0f);
                     rectTran.anchorMax = new Vector2(0.5f, 1.0f);
+                    fiexdDirViewCountF = config.viewMaskLen / (config.cellSize.y + config.spacing.y);
                 }
                 break;
         }
         rectTran.pivot = new Vector2(0, 1);
-        fiexdDirViewCount = Mathf.CeilToInt(config.fiexdDirViewCountF);
+
+        fiexdDirViewCount = Mathf.CeilToInt(fiexdDirViewCountF);
         config.startProgress = Mathf.Clamp01(config.startProgress);
 
         itemList.Clear();
@@ -364,11 +412,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     private void ResetPos()
     {
         Vector3 pos = Vector3.zero;
-        float dirLen = DirLen * 1.0f - config.fiexdDirViewCountF;
-        if (dirLen < 0)
-        {
-            dirLen = 0;
-        }
+        float dirLen = DirLen * 1.0f;
         float fDirLen = 0;
         switch (config.dir)
         {
@@ -378,6 +422,11 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     if (dirLen > 1)
                     {
                         fDirLen += config.spacing.x * (dirLen - 1);
+                    }
+                    fDirLen -= config.viewMaskLen;
+                    if (fDirLen < 0)
+                    {
+                        fDirLen = 0;
                     }
                     pos.x -= fDirLen * config.startProgress;
 
@@ -395,14 +444,21 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     {
                         fDirLen += config.spacing.y * (dirLen - 1);
                     }
+                    fDirLen -= config.viewMaskLen;
+                    if (fDirLen < 0)
+                    {
+                        fDirLen = 0;
+                    }
                     pos.y += fDirLen * config.startProgress;
-
                 }
                 break;
         }
         this.transform.localPosition = pos;
     }
 
+    /// <summary>
+    /// 方向总长度（Item数）
+    /// </summary>
     private int DirLen
     {
         get
@@ -496,6 +552,12 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
             (go.transform as RectTransform).pivot = new Vector2(0, 1);
             go.transform.localPosition = Idx2LocalPos(i);
         }
+    }
+
+    [ContextMenu("Progress")]
+    protected void PrintProgress()
+    {
+        Debug.LogWarning("进度:" + CurProgress());
     }
 
     #endregion 编辑器功能_用来对位置(为了DLL的通用性，不加宏)
