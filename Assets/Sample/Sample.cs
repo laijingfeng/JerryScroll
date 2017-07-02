@@ -35,11 +35,11 @@ public class Sample : MonoBehaviour
             }
             if (sortFlag)
             {
-                datas.Sort(SortCmp2);
+                datas.Sort((x, y) => -x.id.CompareTo(y.id));
             }
             else
             {
-                datas.Sort(SortCmp1);
+                datas.Sort((x, y) => x.id.CompareTo(y.id));
             }
             sortFlag = !sortFlag;
             layoutH.RefreshDatas();
@@ -116,28 +116,6 @@ public class Sample : MonoBehaviour
 
     void Update()
     {
-    }
-
-    /// <summary>
-    /// 升序
-    /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
-    /// <returns></returns>
-    private static int SortCmp1(Item.ItemData a, Item.ItemData b)
-    {
-        return a.id < b.id ? -1 : 1;
-    }
-
-    /// <summary>
-    /// 降序
-    /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
-    /// <returns></returns>
-    private static int SortCmp2(Item.ItemData a, Item.ItemData b)
-    {
-        return a.id > b.id ? -1 : 1;
     }
 
     private void RefreshDataNum()

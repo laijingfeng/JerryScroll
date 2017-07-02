@@ -31,6 +31,7 @@ public class Item : LayoutItem
         }
         newData = data as ItemData;
         isDataDirty = true;
+        TryFillData();
     }
 
     private void TryFillData()
@@ -58,6 +59,8 @@ public class Item : LayoutItem
         num.text = curData.num.ToString();
     }
 
+    #region 数据结构
+
     public class ItemData : ILayoutItemData
     {
         public int id;
@@ -68,10 +71,19 @@ public class Item : LayoutItem
     public class ItemDataChange
     {
         public bool headChanged = false;
+        
+        /// <summary>
+        /// 比较
+        /// </summary>
+        /// <param name="oriD"></param>
+        /// <param name="newD"></param>
+        /// <returns></returns>
         public ItemData Diff(ItemData oriD, ItemData newD)
         {
             headChanged = (oriD == null || LayoutItem.ValDiff<string>(oriD.head, newD.head));
             return newD;
         }
     }
+
+    #endregion 数据结构
 }
