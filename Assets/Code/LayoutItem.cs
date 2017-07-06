@@ -8,7 +8,16 @@ public interface ILayoutItemData
 public abstract class LayoutItem : MonoBehaviour
 {
     private int gridIdx;
-    private bool gridState;
+    private bool gridInUse;
+
+    public void SetGridHide()
+    {
+        gridIdx = -1;
+        if (this.gameObject.activeSelf)
+        {
+            this.gameObject.SetActive(false);
+        }
+    }
 
     public void SetGridIdx(int idx, Vector3 localPos, ILayoutItemData data)
     {
@@ -25,14 +34,18 @@ public abstract class LayoutItem : MonoBehaviour
         return gridIdx;
     }
 
-    public void SetGridState(bool state)
+    public void SetGridState(bool inUse)
     {
-        gridState = state;
+        gridInUse = inUse;
+        if (gridInUse == true && !this.gameObject.activeSelf)
+        {
+            this.gameObject.SetActive(true);
+        }
     }
 
     public bool GetGridState()
     {
-        return gridState;
+        return gridInUse;
     }
 
     public static bool ValDiff<T>(T a, T b)

@@ -99,6 +99,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
 
             if (modifyConfig != null)
             {
+                updateDirty = false;
                 bool change = false;
                 if (modifyConfig.spacing.HasValue)
                 {
@@ -133,6 +134,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
 
             ResetDelta();
             CalFirstIdx();
+            curFirstIdx = calFirstIdxIdx;
             RefreshData(true);
         }
         else
@@ -372,14 +374,9 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         {
             for (int i = 0, imax = itemList.Count; i < imax; i++)
             {
-                if (itemList[i].GetGridState() == false
-                    && itemList[i].gameObject != null)
+                if (itemList[i].GetGridState() == false)
                 {
-                    GameObject.Destroy(itemList[i].gameObject);
-
-                    itemList.RemoveAt(i);
-                    i--;
-                    imax--;
+                    itemList[i].SetGridHide();
                 }
             }
         }
