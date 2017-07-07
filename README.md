@@ -5,7 +5,7 @@
 标签 | Github
 备注 | [Github](https://github.com/laijingfeng/JerryScroll)
 创建 | 2017-06-24 09:49:42
-更新 | 2017-07-02 17:57:24
+更新 | 2017-07-07 13:58:06
 
 [TOC]
 
@@ -33,7 +33,8 @@
 - 新建一个新的具体Layout类，继承`InfinitelyLinearGridLayoutGroup<T, F>`，指定具体的元素UI结构T(LayoutItem)和元素数据结构F(ILayoutItemData)
     - 不需要其他内容，直接可用了
     - 为什么不直接用父类？
-        - Unity不支持挂载这样的Mono 
+        - Unity不支持挂载这样的Mono
+- 脚本挂载在`Scroll View/Viewport/Content`结点
 - ==初始化配置和数据==（配置说明见后面）
     - `public void DoInit(ConfigData tconfig, List<F> tdatas)`
 - ==数据变更==
@@ -69,3 +70,8 @@
 ## 编辑器辅助
 
 新建的Layout类可以直接挂载到资源上，设置配置信息，右击脚本执行`CreateItemsForEditor`，创建元素来观察和调整参数的效果
+
+## QA
+
+- Q：如何实现Padding？
+    - A：把Mask从`Viewport`移到`Scroll View`，设置`Viewport`中`RectTransform`的`Left/Right/Top/Bottom`。
