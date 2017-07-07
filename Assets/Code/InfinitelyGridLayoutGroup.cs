@@ -69,6 +69,21 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         CheckUpdate();
     }
 
+    private bool SetNewData(List<F> tdatas = null)
+    {
+        bool change = false;
+        if (tdatas == null)
+        {
+            change = datas != null;
+        }
+        else
+        {
+            change = datas == null || datas.Count != tdatas.Count;
+        }
+        datas = tdatas;
+        return change;
+    }
+
     #region 对外接口
 
     public void DoInit(LayoutConfig tconfig, List<F> tdatas)
@@ -82,10 +97,9 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="tdatas">数据数量有变化，全部刷新</param>
-    /// <param name="modifyConfig">辅助第一个参数，调整部分配置</param>
-    /// <param name="idxs">数据内容有变化(内容修改/排序修改)，可单点刷新</param>
-    public void RefreshDatas(List<F> tdatas = null, ModifyConfig modifyConfig = null, List<int> idxs = null)
+    /// <param name="tdatas">新的数据数量</param>
+    /// <param name="modifyConfig">调整部分配置</param>
+    public void RefreshDatas(List<F> tdatas = null, ModifyConfig modifyConfig = null)
     {
         if (!awaked
             || !inited
@@ -93,13 +107,24 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         {
             return;
         }
-        if (tdatas != null)
-        {
-            datas = tdatas;
 
-            if (modifyConfig != null)
+        bool dataAmtChange = SetNewData(tdatas);
+        bool modify = modifyConfig != null && modifyConfig.HaveChange(CurProgress(), config.spacing);
+        if (!modify && !dataAmtChange)
+        {
+            foreach (T t in itemList)
             {
-                updateDirty = false;
+                if (t.GetGridState() == true)
+                {
+                    t.TryRefreshUI(datas[t.GetGridIdx()]);
+                }
+            }
+        }
+        else
+        {
+            updateDirty = false;
+            if (modify)
+            {
                 bool change = false;
                 if (modifyConfig.spacing.HasValue)
                 {
@@ -120,6 +145,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     fiexdDirViewCount = Mathf.CeilToInt(fiexdDirViewCountF);
                     change = true;
                 }
+
                 if (modifyConfig.progress.HasValue)
                 {
                     config.startProgress = Mathf.Clamp01(modifyConfig.progress.Value);
@@ -136,16 +162,6 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
             CalFirstIdx();
             curFirstIdx = calFirstIdxIdx;
             RefreshData(true);
-        }
-        else
-        {
-            foreach (T t in itemList)
-            {
-                if (idxs == null || idxs.Contains(t.GetGridIdx()))
-                {
-                    t.TryRefreshUI(datas[t.GetGridIdx()]);
-                }
-            }
         }
     }
 

@@ -102,4 +102,22 @@ public class ModifyConfig
 {
     public float? progress = null;
     public Vector2? spacing = null;
+
+    public bool HaveChange(float curProgress, Vector2 curSpacing)
+    {
+        bool ret = false;
+        if (ret == false
+            && progress.HasValue
+            && !Mathf.Approximately(progress.Value, curProgress))
+        {
+            ret = true;
+        }
+        if (ret == false
+            && spacing.HasValue
+            && !Vector2.Equals(spacing.Value, curSpacing))
+        {
+            ret = true;
+        }
+        return ret;
+    }
 }

@@ -5,7 +5,7 @@
 标签 | Github
 备注 | [Github](https://github.com/laijingfeng/JerryScroll)
 创建 | 2017-06-24 09:49:42
-更新 | 2017-07-07 13:58:06
+更新 | 2017-07-07 17:13:23
 
 [TOC]
 
@@ -38,13 +38,9 @@
 - ==初始化配置和数据==（配置说明见后面）
     - `public void DoInit(ConfigData tconfig, List<F> tdatas)`
 - ==数据变更==
-    - `public void RefreshDatas(List<F> tdatas = null, ModifyConfig modifyConfig = null, List<int> idxs = null)`
-    - 数据数量有变化
-        - 也就是增删，才需要填tdatas参数，此时第二个参数无意义，可视的数据都会刷一遍
-        - 第二个参数是辅助第一个参数的，可以微调部分参数，结构见后面说明
-    - 数据数量无变化
-        - 数据内容变更（排序也是），不填第一个参数
-        - 第三个参数不填则是尝试更新显示的所有数据，否则只更新指定的idx里的
+    - `public void RefreshDatas(List<F> tdatas = null, ModifyConfig modifyConfig = null)`
+    - 新的数据
+    - 可以微调部分参数，结构见后面说明
 - ==获取进度==
     - `public float CurProgress()`
     - 辅助保存进度下次恢复
