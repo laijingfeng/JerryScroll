@@ -5,7 +5,7 @@
 标签 | Github
 备注 | [Github](https://github.com/laijingfeng/JerryScroll)
 创建 | 2017-06-24 09:49:42
-更新 | 2017-07-07 17:13:23
+更新 | 2017-07-08 12:57:41
 
 [TOC]
 
@@ -48,15 +48,15 @@
     - 元素数据结构填充代价大的内容（比如头像/图标等要加载卸载资源）在刷新UI的时候进行差异比较，刷新UI的时候判断差异才修改
 
 配置数据（LayoutConfig）：
+- Transform prefab 预设
 - LayoutDir dir 方向
+- int dirCellWidth 固定的行数或者列数（单排或多排）
+- float dirviewLen 可视区域长度，用来算进度
 - Vector2 cellSize 大小
 - Vector2 spacing 间隔
-- Transform prefab 预设
-- int fixedRowOrColumnCount 固定的行数或者列数（单排或多排）
-- float viewMaskLen 可视区域长度，用来算进度
-- int viewCountHalfBuffer 单边额外缓存的数量，建议为1
-- float startProgress 初始进度
-- int workCountPerFrame 一帧最多更新几个元素，0是无限
+- int bufHalfCnt 单边额外缓存的数量，建议为1
+- float progress 初始进度
+- int frameWorkCnt 一帧最多更新几个元素，0是无限
     - 当一屏显示的数据很多，第一次初始化会卡顿，可以设置这个数量
 
 配置微调（ModifyConfig）：
@@ -65,7 +65,7 @@
 
 ## 编辑器辅助
 
-新建的Layout类可以直接挂载到资源上，设置配置信息，右击脚本执行`CreateItemsForEditor`，创建元素来观察和调整参数的效果
+`LayoutEditor`挂载到资源上，配置信息，可以及时显示效果
 
 ## QA
 

@@ -6,17 +6,16 @@ public class LayoutEditor : InfinitelyGridLayoutGroup<LayoutItem, ILayoutItemDat
 {
     public int editorCreateCnt = 1;
 
-    [ContextMenu("创建元素")]
-    protected void CreateElementsForEditor()
+    public void DoModify()
     {
+        awaked = true;
+        inited = true;
+        TryWork();
+
         if (config.prefab == null)
         {
             return;
         }
-
-        awaked = true;
-        inited = true;
-        TryWork();
 
         for (int i = 0; i < TotalCount; i++)
         {
@@ -47,17 +46,6 @@ public class LayoutEditor : InfinitelyGridLayoutGroup<LayoutItem, ILayoutItemDat
             (go.transform as RectTransform).sizeDelta = config.cellSize;
             go.transform.localPosition = Idx2LocalPos(i);
         }
-    }
-
-    [ContextMenu("输出当前进度")]
-    protected void PrintProgress()
-    {
-        Debug.LogWarning("进度:" + CurProgress());
-    }
-
-    public void DoModify()
-    {
-        CreateElementsForEditor();
     }
 
     protected override int TotalCount
