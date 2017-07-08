@@ -9,6 +9,11 @@ public class LayoutEditor : InfinitelyGridLayoutGroup<LayoutItem, ILayoutItemDat
     [ContextMenu("创建元素")]
     protected void CreateElementsForEditor()
     {
+        if (config.prefab == null)
+        {
+            return;
+        }
+
         awaked = true;
         inited = true;
         TryWork();
@@ -48,6 +53,11 @@ public class LayoutEditor : InfinitelyGridLayoutGroup<LayoutItem, ILayoutItemDat
     protected void PrintProgress()
     {
         Debug.LogWarning("进度:" + CurProgress());
+    }
+
+    public void DoModify()
+    {
+        CreateElementsForEditor();
     }
 
     protected override int TotalCount
