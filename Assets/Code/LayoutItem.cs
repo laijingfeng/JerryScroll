@@ -66,31 +66,34 @@ public class LayoutConfig
 
     public GridLayoutGroup.Axis dir = GridLayoutGroup.Axis.Horizontal;
 
+    /// <summary>
+    /// dir方向元素扩展
+    /// </summary>
+    public int dirCellWidth = 1;
+
+    /// <summary>
+    /// 可视区域dir方向长度，用来算进度
+    /// </summary>
+    public float dirViewLen = 1f;
+
     public Vector2 cellSize = new Vector2(100f, 100f);
 
     public Vector2 spacing = new Vector2(10, 10);
 
     /// <summary>
-    /// 固定行数或列数
+    /// 两端各额外缓存的行数或列数
     /// </summary>
-    public int fixedRowOrColumnCount = 1;
+    public int bufHalfCnt = 0;
 
     /// <summary>
-    /// 可视区域长度，用来算进度
+    /// 进度
     /// </summary>
-    public float viewMaskLen = 1f;
+    public float progress = 0;
 
     /// <summary>
-    /// 额外缓存的行数或列数
+    /// 一帧工作数量，0无限
     /// </summary>
-    public int viewCountHalfBuffer = 0;
-
-    public float startProgress = 0;
-
-    /// <summary>
-    /// 0无限
-    /// </summary>
-    public int workCountPerFrame = 0;
+    public int frameWorkCnt = 0;
 }
 
 /// <summary>

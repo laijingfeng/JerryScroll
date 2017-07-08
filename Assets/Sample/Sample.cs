@@ -60,15 +60,15 @@ public class Sample : MonoBehaviour
             {
                 layoutH.DoInit(new LayoutConfig()
                 {
-                    startProgress = layoutHProgress.value,
-                    viewCountHalfBuffer = 1,
+                    progress = layoutHProgress.value,
+                    bufHalfCnt = 1,
                     cellSize = new Vector2(190, 190),
                     dir = GridLayoutGroup.Axis.Horizontal,
-                    viewMaskLen = 590f,
+                    dirViewLen = 590f,
                     prefab = prefab.transform,
                     spacing = new Vector2(JerryUtil.String2TArray<float>(layoutHSpacing.text)[0], JerryUtil.String2TArray<float>(layoutHSpacing.text)[0]),
-                    fixedRowOrColumnCount = 1,
-                    workCountPerFrame = 0,
+                    dirCellWidth = 1,
+                    frameWorkCnt = 0,
                 }, datas);
             }
             else
@@ -84,15 +84,15 @@ public class Sample : MonoBehaviour
             {
                 layoutV.DoInit(new LayoutConfig()
                 {
-                    startProgress = lastProgressV,
-                    viewCountHalfBuffer = 1,
+                    progress = lastProgressV,
+                    bufHalfCnt = 1,
                     cellSize = new Vector2(190, 190),
                     dir = GridLayoutGroup.Axis.Vertical,
-                    viewMaskLen = 500f,
+                    dirViewLen = 500f,
                     prefab = prefab.transform,
                     spacing = new Vector2(10, 10),
-                    fixedRowOrColumnCount = 3,
-                    workCountPerFrame = 3,
+                    dirCellWidth = 3,
+                    frameWorkCnt = 3,
                 }, datas);
             }
             else

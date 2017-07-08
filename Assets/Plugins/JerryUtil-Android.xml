@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>JerryUtil</name>
+        <name>JerryUtil-Android</name>
     </assembly>
     <members>
         <member name="M:Jerry.JerryMath.Contains(UnityEngine.Vector3[],UnityEngine.Vector3)">
@@ -111,27 +111,31 @@
             <param name="includeInactive"></param>
             <returns></returns>
         </member>
-        <member name="M:Jerry.JerryUtil.DestroyAllChildren(UnityEngine.GameObject)">
+        <member name="M:Jerry.JerryUtil.DestroyAllChildren(UnityEngine.GameObject,System.Boolean)">
             <summary>
             删除所有儿子结点
             </summary>
             <param name="go"></param>
+            <param name="immediate">是否立即删除，编辑器有时需要</param>
         </member>
-        <member name="M:Jerry.JerryUtil.DestroyAllChildren(UnityEngine.Component)">
+        <member name="M:Jerry.JerryUtil.DestroyAllChildren(UnityEngine.Component,System.Boolean)">
             <summary>
             删除所有儿子结点
             </summary>
             <param name="comp"></param>
+            <param name="immediate">是否立即删除，编辑器有时需要</param>
         </member>
-        <member name="M:Jerry.JerryUtil.CalUIPosRelateToCanvas(UnityEngine.Transform,System.Boolean)">
+        <member name="M:Jerry.JerryUtil.CalUIPosRelateToCanvas(UnityEngine.Transform,System.Boolean,System.String)">
             <summary>
             <para>计算UI相对父节点的偏移量</para>
-            <para>返回值z轴为0</para>
+            <para>返回值z轴为0</para> 
             </summary>
             <param name="child"></param>
+            <param name="includeSelf"></param>
+            <param name="checkCanvasName">检查Cavans的名字，子节点如果加了额外的Canvas，可以通过这个参数过滤找到最外层的Canvas</param>
             <returns>z轴为0</returns>
         </member>
-        <member name="M:Jerry.JerryUtil.PosWorld2Canvas(UnityEngine.Vector3,UnityEngine.Canvas,UnityEngine.Transform)">
+        <member name="M:Jerry.JerryUtil.PosWorld2Canvas(UnityEngine.Vector3,UnityEngine.Canvas,UnityEngine.Transform,System.String)">
             <summary>
             <para>World->Canvas</para>
             <para>返回值z轴为0</para>
@@ -139,15 +143,17 @@
             <param name="pos">世界位置</param>
             <param name="canvas">UI的Canvas</param>
             <param name="tf">使用结果的UI结点，空则是相对Canvas</param>
+            <param name="checkCanvasName">检查Cavans的名字，子节点如果加了额外的Canvas，可以通过这个参数过滤找到最外层的Canvas</param>
             <returns></returns>
         </member>
-        <member name="M:Jerry.JerryUtil.PosCanvas2Screen(UnityEngine.Canvas,UnityEngine.Transform)">
+        <member name="M:Jerry.JerryUtil.PosCanvas2Screen(UnityEngine.Canvas,UnityEngine.Transform,System.String)">
             <summary>
             <para>Canvas->Screen</para>
             <para>返回值z轴为0</para>
             </summary>
             <param name="canvas"></param>
             <param name="tf"></param>
+            <param name="checkCanvasName">检查Cavans的名字，子节点如果加了额外的Canvas，可以通过这个参数过滤找到最外层的Canvas</param>
             <returns></returns>
         </member>
         <member name="M:Jerry.JerryUtil.PosCanvas2Screen(UnityEngine.Canvas,UnityEngine.Vector3)">
@@ -159,16 +165,17 @@
             <param name="pos">点</param>
             <returns></returns>
         </member>
-        <member name="M:Jerry.JerryUtil.PosMouse2Canvas(UnityEngine.Canvas,UnityEngine.Transform)">
+        <member name="M:Jerry.JerryUtil.PosMouse2Canvas(UnityEngine.Canvas,UnityEngine.Transform,System.String)">
             <summary>
             <para>ScreenMouse->Canvas</para>
             <para>返回值z轴为0</para>
             </summary>
             <param name="canvas">Canvas</param>
             <param name="tf">使用结果的UI结点，空则是相对Canvas</param>
+            <param name="checkCanvasName">检查Cavans的名字，子节点如果加了额外的Canvas，可以通过这个参数过滤找到最外层的Canvas</param>
             <returns></returns>
         </member>
-        <member name="M:Jerry.JerryUtil.PosScreen2Canvas(UnityEngine.Canvas,UnityEngine.Vector3,UnityEngine.Transform)">
+        <member name="M:Jerry.JerryUtil.PosScreen2Canvas(UnityEngine.Canvas,UnityEngine.Vector3,UnityEngine.Transform,System.String)">
             <summary>
             <para>Screen->Canvas</para>
             <para>返回值z轴为0</para>
@@ -176,6 +183,7 @@
             <param name="canvas">Canvas</param>
             <param name="pos">Screen Position</param>
             <param name="tf">使用结果的UI结点，空则是相对Canvas</param>
+            <param name="checkCanvasName">检查Cavans的名字，子节点如果加了额外的Canvas，可以通过这个参数过滤找到最外层的Canvas</param>
             <returns></returns>
         </member>
         <member name="M:Jerry.JerryUtil.GetClickPos">

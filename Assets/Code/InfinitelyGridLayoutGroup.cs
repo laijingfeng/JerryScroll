@@ -17,8 +17,8 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     /// </summary>
     private List<T> itemList = new List<T>();
 
-    private bool awaked = false;
-    private bool inited = false;
+    protected bool awaked = false;
+    protected bool inited = false;
     public bool Inited
     {
         get
@@ -46,14 +46,10 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     /// <summary>
     /// 数据总量
     /// </summary>
-    private int TotalCount
+    protected virtual int TotalCount
     {
         get
         {
-            if (editorMode)
-            {
-                return editorTotalCount;
-            }
             return (datas == null) ? 0 : datas.Count;
         }
     }
@@ -133,12 +129,12 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     {
                         case GridLayoutGroup.Axis.Horizontal:
                             {
-                                fiexdDirViewCountF = config.viewMaskLen / (config.cellSize.x + config.spacing.x);
+                                fiexdDirViewCountF = config.dirViewLen / (config.cellSize.x + config.spacing.x);
                             }
                             break;
                         case GridLayoutGroup.Axis.Vertical:
                             {
-                                fiexdDirViewCountF = config.viewMaskLen / (config.cellSize.y + config.spacing.y);
+                                fiexdDirViewCountF = config.dirViewLen / (config.cellSize.y + config.spacing.y);
                             }
                             break;
                     }
@@ -148,7 +144,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
 
                 if (modifyConfig.progress.HasValue)
                 {
-                    config.startProgress = Mathf.Clamp01(modifyConfig.progress.Value);
+                    config.progress = Mathf.Clamp01(modifyConfig.progress.Value);
                     change = true;
                 }
 
@@ -184,7 +180,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     {
                         fDirLen += config.spacing.x * (dirLen - 1);
                     }
-                    fDirLen -= config.viewMaskLen;
+                    fDirLen -= config.dirViewLen;
                     if (fDirLen < 0)
                     {
                         fDirLen = 0;
@@ -203,7 +199,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     {
                         fDirLen += config.spacing.y * (dirLen - 1);
                     }
-                    fDirLen -= config.viewMaskLen;
+                    fDirLen -= config.dirViewLen;
                     if (fDirLen < 0)
                     {
                         fDirLen = 0;
@@ -221,7 +217,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
 
     #endregion 对外接口
 
-    private void TryWork()
+    protected void TryWork()
     {
         if (!awaked
             || !inited)
@@ -237,7 +233,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     (rectTran.parent as RectTransform).pivot = new Vector2(0, 0.5f);
                     rectTran.anchorMin = new Vector2(0, 0.5f);
                     rectTran.anchorMax = new Vector2(0, 0.5f);
-                    fiexdDirViewCountF = config.viewMaskLen / (config.cellSize.x + config.spacing.x);
+                    fiexdDirViewCountF = config.dirViewLen / (config.cellSize.x + config.spacing.x);
                 }
                 break;
             case GridLayoutGroup.Axis.Vertical:
@@ -245,20 +241,17 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     (rectTran.parent as RectTransform).pivot = new Vector2(0.5f, 1.0f);
                     rectTran.anchorMin = new Vector2(0.5f, 1.0f);
                     rectTran.anchorMax = new Vector2(0.5f, 1.0f);
-                    fiexdDirViewCountF = config.viewMaskLen / (config.cellSize.y + config.spacing.y);
+                    fiexdDirViewCountF = config.dirViewLen / (config.cellSize.y + config.spacing.y);
                 }
                 break;
         }
         rectTran.pivot = new Vector2(0, 1);
 
         fiexdDirViewCount = Mathf.CeilToInt(fiexdDirViewCountF);
-        config.startProgress = Mathf.Clamp01(config.startProgress);
+        config.progress = Mathf.Clamp01(config.progress);
 
         itemList.Clear();
-        if (!editorMode)
-        {
-            JerryUtil.DestroyAllChildren(this.transform);
-        }
+        JerryUtil.DestroyAllChildren(this.transform, IsEditorMode);
 
         curFirstIdx = -1;
         ResetPos();
@@ -269,13 +262,13 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
 
     private float calFirstIdxPos, calFirstIdxSize, calFirstIdxSpacing;
     private int calFirstIdxIdx;
-    private void CalFirstIdx()
+    protected void CalFirstIdx()
     {
         calFirstIdxPos = config.dir == GridLayoutGroup.Axis.Horizontal ? -this.transform.localPosition.x : this.transform.localPosition.y;
         calFirstIdxSize = config.dir == GridLayoutGroup.Axis.Horizontal ? config.cellSize.x : config.cellSize.y;
         calFirstIdxSpacing = config.dir == GridLayoutGroup.Axis.Horizontal ? config.spacing.x : config.spacing.y;
-        calFirstIdxIdx = (int)(calFirstIdxPos / (calFirstIdxSize + calFirstIdxSpacing)) * config.fixedRowOrColumnCount;
-        calFirstIdxIdx -= config.viewCountHalfBuffer * config.fixedRowOrColumnCount;
+        calFirstIdxIdx = (int)(calFirstIdxPos / (calFirstIdxSize + calFirstIdxSpacing)) * config.dirCellWidth;
+        calFirstIdxIdx -= config.bufHalfCnt * config.dirCellWidth;
         if (calFirstIdxIdx < 0)
         {
             calFirstIdxIdx = 0;
@@ -285,7 +278,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     private bool updateDirty = false;
     private void CheckUpdate()
     {
-        if (editorMode
+        if (IsEditorMode
             || !awaked
             || !inited
             || !ready)
@@ -315,7 +308,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         updateWork = 0;
         updateDirty = false;
 
-        curLastIdx = curFirstIdx + (fiexdDirViewCount + config.viewCountHalfBuffer * 2) * config.fixedRowOrColumnCount - 1;
+        curLastIdx = curFirstIdx + (fiexdDirViewCount + config.bufHalfCnt * 2) * config.dirCellWidth - 1;
         if (curLastIdx >= TotalCount)
         {
             curLastIdx = TotalCount - 1;
@@ -345,8 +338,8 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
 
             //还有新的任务
             if (!forceUpdate
-                && config.workCountPerFrame > 0
-                && updateWork > config.workCountPerFrame)
+                && config.frameWorkCnt > 0
+                && updateWork > config.frameWorkCnt)
             {
                 updateDirty = true;
                 break;
@@ -398,7 +391,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         }
     }
 
-    private Vector3 Idx2LocalPos(int idx)
+    protected Vector3 Idx2LocalPos(int idx)
     {
         Vector3 ret = Vector3.zero;
         int gridX = 0, gridY = 0;
@@ -406,14 +399,14 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         {
             case GridLayoutGroup.Axis.Horizontal:
                 {
-                    gridX = idx / config.fixedRowOrColumnCount;
-                    gridY = idx % config.fixedRowOrColumnCount;
+                    gridX = idx / config.dirCellWidth;
+                    gridY = idx % config.dirCellWidth;
                 }
                 break;
             case GridLayoutGroup.Axis.Vertical:
                 {
-                    gridX = idx % config.fixedRowOrColumnCount;
-                    gridY = idx / config.fixedRowOrColumnCount;
+                    gridX = idx % config.dirCellWidth;
+                    gridY = idx / config.dirCellWidth;
                 }
                 break;
         }
@@ -436,20 +429,20 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     {
                         fDirLen += config.spacing.x * (dirLen - 1);
                     }
-                    fDirLen -= config.viewMaskLen;
+                    fDirLen -= config.dirViewLen;
                     if (fDirLen < 0)
                     {
                         fDirLen = 0;
                     }
-                    pos.x -= fDirLen * config.startProgress;
+                    pos.x -= fDirLen * config.progress;
 
-                    pos.y += config.cellSize.y * config.fixedRowOrColumnCount + config.spacing.y * (config.fixedRowOrColumnCount - 1);
+                    pos.y += config.cellSize.y * config.dirCellWidth + config.spacing.y * (config.dirCellWidth - 1);
                     pos.y *= 0.5f;
                 }
                 break;
             case GridLayoutGroup.Axis.Vertical:
                 {
-                    pos.x -= config.cellSize.x * config.fixedRowOrColumnCount + config.spacing.x * (config.fixedRowOrColumnCount - 1);
+                    pos.x -= config.cellSize.x * config.dirCellWidth + config.spacing.x * (config.dirCellWidth - 1);
                     pos.x *= 0.5f;
 
                     fDirLen = config.cellSize.y * dirLen;
@@ -457,12 +450,12 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                     {
                         fDirLen += config.spacing.y * (dirLen - 1);
                     }
-                    fDirLen -= config.viewMaskLen;
+                    fDirLen -= config.dirViewLen;
                     if (fDirLen < 0)
                     {
                         fDirLen = 0;
                     }
-                    pos.y += fDirLen * config.startProgress;
+                    pos.y += fDirLen * config.progress;
                 }
                 break;
         }
@@ -476,13 +469,13 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     {
         get
         {
-            return (TotalCount / config.fixedRowOrColumnCount) + (TotalCount % config.fixedRowOrColumnCount == 0 ? 0 : 1);
+            return (TotalCount / config.dirCellWidth) + (TotalCount % config.dirCellWidth == 0 ? 0 : 1);
         }
     }
 
     private void ResetDelta()
     {
-        Vector2 size = config.cellSize * config.fixedRowOrColumnCount;
+        Vector2 size = config.cellSize * config.dirCellWidth;
         int dirLen = DirLen;
         switch (config.dir)
         {
@@ -494,17 +487,17 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                         size.x += (dirLen - 1) * config.spacing.x;
                     }
 
-                    if (config.fixedRowOrColumnCount > 1)
+                    if (config.dirCellWidth > 1)
                     {
-                        size.y += (config.fixedRowOrColumnCount - 1) * config.spacing.y;
+                        size.y += (config.dirCellWidth - 1) * config.spacing.y;
                     }
                 }
                 break;
             case GridLayoutGroup.Axis.Vertical:
                 {
-                    if (config.fixedRowOrColumnCount > 1)
+                    if (config.dirCellWidth > 1)
                     {
-                        size.x += (config.fixedRowOrColumnCount - 1) * config.spacing.x;
+                        size.x += (config.dirCellWidth - 1) * config.spacing.x;
                     }
 
                     size.y = dirLen * config.cellSize.y;
@@ -518,70 +511,11 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         rectTran.sizeDelta = size;
     }
 
-    #region 编辑器功能_用来对位置(为了DLL的通用性，不加宏)
-
-    /// <summary>
-    /// 编辑器模式
-    /// </summary>
-    public bool editorMode = false;
-    public int editorTotalCount = 1;
-
-    [ContextMenu("CreateItemsForEditor")]
-    protected void CreateItemsForEditor()
+    protected virtual bool IsEditorMode
     {
-        awaked = true;
-        inited = true;
-        TryWork();
-        CalFirstIdx();
-
-        while (true)
+        get
         {
-            if (this.transform.childCount <= 0)
-            {
-                break;
-            }
-            Transform tf = this.transform.GetChild(0);
-            if (tf != null && tf.gameObject != null)
-            {
-                GameObject.DestroyImmediate(tf.gameObject);
-            }
-        }
-
-        for (int i = 0; i < TotalCount; i++)
-        {
-            GameObject go = JerryUtil.CloneGo(new JerryUtil.CloneGoData()
-            {
-                name = i.ToString(),
-                parant = this.transform,
-                prefab = config.prefab.gameObject,
-                active = true,
-            });
-
-            switch (config.dir)
-            {
-                case GridLayoutGroup.Axis.Horizontal:
-                    {
-                        (go.transform as RectTransform).anchorMin = new Vector2(0.5f, 0.5f);
-                        (go.transform as RectTransform).anchorMax = new Vector2(0.5f, 0.5f);
-                    }
-                    break;
-                case GridLayoutGroup.Axis.Vertical:
-                    {
-                        (go.transform as RectTransform).anchorMin = new Vector2(0.5f, 0.5f);
-                        (go.transform as RectTransform).anchorMax = new Vector2(0.5f, 0.5f);
-                    }
-                    break;
-            }
-            (go.transform as RectTransform).pivot = new Vector2(0, 1);
-            go.transform.localPosition = Idx2LocalPos(i);
+            return false;
         }
     }
-
-    [ContextMenu("Progress")]
-    protected void PrintProgress()
-    {
-        Debug.LogWarning("进度:" + CurProgress());
-    }
-
-    #endregion 编辑器功能_用来对位置(为了DLL的通用性，不加宏)
 }
