@@ -9,7 +9,7 @@ public class LayoutEditor : MonoBehaviour
 #if UNITY_EDITOR
 
     [Tooltip("创建若干个元素预览，提交前请置为0")]
-    public int editorCreateCnt = 1;
+    public int editorCreateCnt = 0;
 
     private RectTransform rectTran;
 
