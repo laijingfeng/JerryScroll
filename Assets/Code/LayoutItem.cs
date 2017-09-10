@@ -123,6 +123,15 @@ public class LayoutConfig
     {
     }
 
+    public LayoutConfig(Transform content)
+    {
+        if (content != null
+            && content.GetComponent<LayoutEditor>() != null)
+        {
+            FillData(content.GetComponent<LayoutEditor>().config);
+        }
+    }
+
     public LayoutConfig(LayoutConfig config)
     {
         FillData(config);
