@@ -3,7 +3,7 @@ using Jerry;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
+public abstract class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     where T : LayoutItem
     where F : ILayoutItemData
 {
@@ -17,8 +17,11 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     /// </summary>
     private List<T> itemList = new List<T>();
 
-    protected bool awaked = false;
-    protected bool inited = false;
+    private bool awaked = false;
+    private bool inited = false;
+    /// <summary>
+    /// 是否初始化好了
+    /// </summary>
     public bool Inited
     {
         get
@@ -28,7 +31,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     }
     private bool ready = false;
 
-    public LayoutConfig config = new LayoutConfig();
+    private LayoutConfig config = new LayoutConfig();
 
     /// <summary>
     /// 长度方向可视数量，取上整
@@ -46,7 +49,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     /// <summary>
     /// 数据总量
     /// </summary>
-    protected virtual int TotalCount
+    private int TotalCount
     {
         get
         {
@@ -54,13 +57,13 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         }
     }
 
-    public virtual void Awake()
+    protected virtual void Awake()
     {
         awaked = true;
         TryWork();
     }
 
-    public virtual void Update()
+    protected virtual void Update()
     {
         CheckUpdate();
     }
@@ -217,7 +220,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
 
     #endregion 对外接口
 
-    protected void TryWork()
+    private void TryWork()
     {
         if (!awaked
             || !inited)
@@ -251,7 +254,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         config.progress = Mathf.Clamp01(config.progress);
 
         itemList.Clear();
-        JerryUtil.DestroyAllChildren(this.transform, IsEditorMode);
+        JerryUtil.DestroyAllChildren(this.transform, false);
 
         curFirstIdx = -1;
         ResetPos();
@@ -262,7 +265,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
 
     private float calFirstIdxPos, calFirstIdxSize, calFirstIdxSpacing;
     private int calFirstIdxIdx;
-    protected void CalFirstIdx()
+    private void CalFirstIdx()
     {
         calFirstIdxPos = config.dir == GridLayoutGroup.Axis.Horizontal ? -this.transform.localPosition.x : this.transform.localPosition.y;
         calFirstIdxSize = config.dir == GridLayoutGroup.Axis.Horizontal ? config.cellSize.x : config.cellSize.y;
@@ -278,8 +281,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
     private bool updateDirty = false;
     private void CheckUpdate()
     {
-        if (IsEditorMode
-            || !awaked
+        if (!awaked
             || !inited
             || !ready)
         {
@@ -391,7 +393,7 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
         }
     }
 
-    protected Vector3 Idx2LocalPos(int idx)
+    private Vector3 Idx2LocalPos(int idx)
     {
         Vector3 ret = Vector3.zero;
         int gridX = 0, gridY = 0;
@@ -509,13 +511,5 @@ public class InfinitelyGridLayoutGroup<T, F> : MonoBehaviour
                 break;
         }
         rectTran.sizeDelta = size;
-    }
-
-    protected virtual bool IsEditorMode
-    {
-        get
-        {
-            return false;
-        }
     }
 }
