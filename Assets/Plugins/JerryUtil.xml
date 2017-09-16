@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>JerryUtil-Android</name>
+        <name>JerryUtil</name>
     </assembly>
     <members>
         <member name="M:Jerry.JerryMath.Contains(UnityEngine.Vector3[],UnityEngine.Vector3)">
