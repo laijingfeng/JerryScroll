@@ -1,18 +1,21 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(LayoutEditor))]
-public class LayoutEditorInspector : Editor
+namespace Jerry
 {
-    protected LayoutEditor info;
-
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(LayoutEditor))]
+    public class LayoutEditorInspector : Editor
     {
-        base.OnInspectorGUI();
-        if (GUI.changed)
+        protected LayoutEditor info;
+
+        public override void OnInspectorGUI()
         {
-            info = target as LayoutEditor;
-            info.DoModify();
+            base.OnInspectorGUI();
+            if (GUI.changed)
+            {
+                info = target as LayoutEditor;
+                info.DoModify();
+            }
         }
     }
 }
