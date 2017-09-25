@@ -23,7 +23,7 @@
 >
 > 数据到达一定的量的时候（如10w），Pos的值可能会非常大，会影响滑动的效果（可以明显看到progress为0和1时滑动手感是不一样的，所以感觉是数值[单排时(spacing+cell)*count]太大造成的）当然实际使用中，数据到1w都极少极少吧
 
-![image](http://odk2uwdl8.bkt.clouddn.com/InfinitelyGridLayoutGroup01.png)
+![image](http://odk2uwdl8.bkt.clouddn.com/2017-09-25_JerryScroll.png)
 
 ## 使用（参考Sample）
 
