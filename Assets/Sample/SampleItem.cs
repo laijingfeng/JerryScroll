@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 using Jerry;
 
-public class Item : LayoutItem
+public class SampleItem : LayoutItem
 {
     private Transform head;
     private Text id;

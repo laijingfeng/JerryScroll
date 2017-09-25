@@ -374,6 +374,7 @@ namespace Jerry
                             break;
                     }
                     (tmpLayoutItem.transform as RectTransform).pivot = new Vector2(0, 1);
+                    (tmpLayoutItem.transform as RectTransform).sizeDelta = config.cellSize;
                     itemList.Add(tmpLayoutItem);
                 }
                 tmpLayoutItem.SetGridState(true);

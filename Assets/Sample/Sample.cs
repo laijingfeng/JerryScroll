@@ -5,8 +5,40 @@ using UnityEngine.UI;
 
 public class Sample : MonoBehaviour
 {
+    void Awake()
+    {
+        TestV();
+        TestH();
+    }
+
+    #region ScrollVivewH
+
+    public bool runH = false;
+
+    private SampleLayout layoutH;
+    private Transform layoutHContent;
+    private void TestH()
+    {
+        if (!runH)
+        {
+            return;
+        }
+
+        layoutHContent = this.transform.FindChild("ScrollViewHEditor/Viewport/Content");
+        layoutH = layoutHContent.gameObject.AddComponent<SampleLayout>();
+
+        LayoutConfig config = new LayoutConfig(layoutHContent);
+        config.frameWorkCnt = 0;
+        config.bufHalfCnt = 1;
+
+        layoutH.DoInit(config, GenDatas(10));
+    }
+
+    #endregion ScrollVivewH
+
+    #region ScrollVivewV
+
     public GameObject prefab;
-    public Transform layoutHContent;
     public Transform layoutVContent;
     public Button genData;
     public Button sortData;
@@ -14,24 +46,19 @@ public class Sample : MonoBehaviour
     public Button minusData;
     public InputField dataNum;
 
-    public Slider layoutHProgress;
-    public InputField layoutHSpacing;
+    public Slider layoutProgress;
+    public InputField layoutSpacing;
 
-    private List<Item.ItemData> datas = new List<Item.ItemData>();
-
-    private Layout layoutH;
-    private Layout layoutV;
-
+    private SampleLayout layoutV;
     private bool sortFlag = true;
-    private float lastProgressV = 0.9f;
 
-    void Awake()
+    private void TestV()
     {
-        layoutHSpacing.text = "0";
+        layoutSpacing.text = "0";
 
-        layoutH = layoutHContent.gameObject.AddComponent<Layout>();
-        layoutV = layoutVContent.gameObject.AddComponent<Layout>();
+        layoutV = layoutVContent.gameObject.AddComponent<SampleLayout>();
         RefreshDataNum(0);
+        List<SampleItem.ItemData> datas = new List<SampleItem.ItemData>();
 
         sortData.onClick.AddListener(() =>
         {
@@ -48,58 +75,34 @@ public class Sample : MonoBehaviour
                 datas.Sort((x, y) => x.id.CompareTo(y.id));
             }
             sortFlag = !sortFlag;
-            layoutH.RefreshDatas();
             layoutV.RefreshDatas();
         });
 
         genData.onClick.AddListener(() =>
         {
-            GenDatas();
-
-            if (!layoutH.Inited)
-            {
-                layoutH.DoInit(new LayoutConfig()
-                {
-                    progress = layoutHProgress.value,
-                    bufHalfCnt = 1,
-                    cellSize = new Vector2(190, 190),
-                    dir = GridLayoutGroup.Axis.Horizontal,
-                    dirViewLen = 590f,
-                    prefab = prefab.transform,
-                    spacing = new Vector2(JerryUtil.String2TArray<float>(layoutHSpacing.text)[0], JerryUtil.String2TArray<float>(layoutHSpacing.text)[0]),
-                    dirCellWidth = 1,
-                    frameWorkCnt = 0,
-                }, datas);
-            }
-            else
-            {
-                layoutH.RefreshDatas(datas, new ModifyConfig()
-                {
-                    progress = layoutHProgress.value,
-                    spacing = new Vector2(JerryUtil.String2TArray<float>(layoutHSpacing.text)[0], JerryUtil.String2TArray<float>(layoutHSpacing.text)[0]),
-                });
-            }
-
+            datas = GenDatas(GetDataNum());
             if (!layoutV.Inited)
             {
                 layoutV.DoInit(new LayoutConfig()
                 {
-                    progress = lastProgressV,
+                    progress = layoutProgress.value,
                     bufHalfCnt = 1,
                     cellSize = new Vector2(190, 190),
                     dir = GridLayoutGroup.Axis.Vertical,
                     dirViewLen = 500f,
                     prefab = prefab.transform,
-                    spacing = new Vector2(10, 10),
+                    spacing = new Vector2(JerryUtil.String2TArray<float>(layoutSpacing.text)[0], JerryUtil.String2TArray<float>(layoutSpacing.text)[0]),
                     dirCellWidth = 3,
                     frameWorkCnt = 3,
                 }, datas);
             }
             else
             {
-                lastProgressV = layoutV.CurProgress();
-
-                layoutV.RefreshDatas(datas);
+                layoutV.RefreshDatas(datas, new ModifyConfig()
+                {
+                    progress = layoutProgress.value,
+                    spacing = new Vector2(JerryUtil.String2TArray<float>(layoutSpacing.text)[0], JerryUtil.String2TArray<float>(layoutSpacing.text)[0]),
+                });
             }
         });
 
@@ -118,10 +121,6 @@ public class Sample : MonoBehaviour
         });
     }
 
-    void Update()
-    {
-    }
-
     private void RefreshDataNum(int num)
     {
         dataNum.text = num.ToString();
@@ -132,16 +131,19 @@ public class Sample : MonoBehaviour
         return JerryUtil.String2TArray<int>(dataNum.text)[0];
     }
 
+    #endregion ScrollVivewV
+
     #region 随机数据
 
-    private void GenDatas()
+    private List<SampleItem.ItemData> GenDatas(int cnt)
     {
         idKey = 0;
-        datas.Clear();
-        for (int i = 0; i < GetDataNum(); i++)
+        List<SampleItem.ItemData> datas = new List<SampleItem.ItemData>();
+        for (int i = 0; i < cnt; i++)
         {
             datas.Add(RandomOneData());
         }
+        return datas;
     }
 
     private int idKey = 0;
@@ -151,9 +153,9 @@ public class Sample : MonoBehaviour
         return idKey;
     }
 
-    private Item.ItemData RandomOneData()
+    private SampleItem.ItemData RandomOneData()
     {
-        Item.ItemData ret = new Item.ItemData();
+        SampleItem.ItemData ret = new SampleItem.ItemData();
         ret.id = GenId();
         ret.num = Random.Range(0, 1000);
         ret.head = string.Format("head{0}", Random.Range(0, 3));

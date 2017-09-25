@@ -16,6 +16,11 @@ namespace Jerry
 
         public void DoModify()
         {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+
             TryWork();
 
             if (config.prefab == null)
