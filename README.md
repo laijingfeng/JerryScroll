@@ -5,7 +5,7 @@
 标签 | Github
 备注 | [Github](https://github.com/laijingfeng/JerryScroll)
 创建 | 2017-06-24 09:49:42
-更新 | 2017-07-08 12:57:41
+更新 | 2017-09-25 18:26:09
 
 [TOC]
 
@@ -23,7 +23,7 @@
 >
 > 数据到达一定的量的时候（如10w），Pos的值可能会非常大，会影响滑动的效果（可以明显看到progress为0和1时滑动手感是不一样的，所以感觉是数值[单排时(spacing+cell)*count]太大造成的）当然实际使用中，数据到1w都极少极少吧
 
-![image](http://odk2uwdl8.bkt.clouddn.com/InfinitelyGridLayoutGroup00.png)
+![image](http://odk2uwdl8.bkt.clouddn.com/InfinitelyGridLayoutGroup01.png)
 
 ## 使用（参考Sample）
 
@@ -35,8 +35,9 @@
     - 为什么不直接用父类？
         - Unity不支持挂载这样的Mono
 - 脚本挂载在`Scroll View/Viewport/Content`结点
+    - 大部分时候，很多的参数是由UI同学在Art工程去设置和调整的，这时候在该结点下挂载==LayoutEditor==脚本，LayoutConfig构造的时候有接口读取这些配置 
 - ==初始化配置和数据==（配置说明见后面）
-    - `public void DoInit(ConfigData tconfig, List<F> tdatas)`
+    - `public void DoInit(LayoutConfig tconfig, List<F> tdatas)`
 - ==数据变更==
     - `public void RefreshDatas(List<F> tdatas = null, ModifyConfig modifyConfig = null)`
     - 新的数据
@@ -49,7 +50,7 @@
 
 配置数据（LayoutConfig）：
 - Transform prefab 预设
-- LayoutDir dir 方向
+- LayoutDir dir 滑动方向
 - int dirCellWidth 固定的行数或者列数（单排或多排）
 - float dirviewLen 可视区域长度，用来算进度
 - Vector2 cellSize 大小
@@ -65,7 +66,12 @@
 
 ## 编辑器辅助
 
-`LayoutEditor`挂载到资源上，配置信息，可以及时显示效果
+`LayoutEditor`挂载到Content结点上，配置信息，可以及时调整效果，并保存
+
+说明：
+- 填写相关参数，调整`EditorCreateCnt`就可以创建相应数量的Item来预览效果
+- 运行时`EditorCreateCnt`无效
+- 调整完成后，`EditorCreateCnt`记得置为0
 
 ## QA
 
