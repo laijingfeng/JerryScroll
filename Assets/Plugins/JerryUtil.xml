@@ -186,14 +186,6 @@
             <param name="checkCanvasName">检查Cavans的名字，子节点如果加了额外的Canvas，可以通过这个参数过滤找到最外层的Canvas</param>
             <returns></returns>
         </member>
-        <member name="M:Jerry.JerryUtil.GetClickPos">
-            <summary>
-            <para>获得点击位置</para>
-            <para>移动设备用第一个触摸点</para>
-            <para>返回值z轴为0</para>
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:Jerry.JerryUtil.String2TArray``1(System.String,System.Char)">
             <summary>
             <para>StringToTArray</para>
@@ -241,6 +233,14 @@
             </summary>
             <param name="mask"></param>
             <param name="check"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Jerry.JerryUtil.GetClickPos">
+            <summary>
+            <para>获得点击位置</para>
+            <para>移动设备用第一个触摸点</para>
+            <para>返回值z轴为0</para>
+            </summary>
             <returns></returns>
         </member>
         <member name="F:Jerry.JerryUtil.CloneGoData.prefab">
