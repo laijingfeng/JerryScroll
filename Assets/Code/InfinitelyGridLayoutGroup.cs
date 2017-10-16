@@ -80,7 +80,14 @@ namespace Jerry
             {
                 change = datas == null || datas.Count != tdatas.Count;
             }
-            datas = tdatas;
+            if (tdatas == null)
+            {
+                datas.Clear();
+            }
+            else
+            {
+                datas = new List<F>(tdatas);
+            }
             return change;
         }
 
@@ -89,7 +96,14 @@ namespace Jerry
         public void DoInit(LayoutConfig tconfig, List<F> tdatas)
         {
             config = tconfig;
-            datas = tdatas;
+            if (tdatas == null)
+            {
+                datas.Clear();
+            }
+            else
+            {
+                datas = new List<F>(tdatas);
+            }
             inited = true;
             TryWork();
         }
