@@ -8,7 +8,7 @@ public class AutoBuild : Editor
     static public void ExportAndroid()
     {
         //PlayerSettings.productName = "UnityProject";
-        PlayerSettings.bundleIdentifier = string.Format("com.jerry.lai.{0}", PlayerSettings.productName);
+        PlayerSettings.applicationIdentifier = string.Format("com.jerry.lai.{0}", PlayerSettings.productName);
         PlayerSettings.keystorePass = "jerrylai@jingfeng*1990";
         PlayerSettings.keyaliasPass = "lai123";
 

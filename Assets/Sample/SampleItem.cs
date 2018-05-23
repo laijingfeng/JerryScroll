@@ -16,9 +16,9 @@ public class SampleItem : LayoutItem
 
     void Awake()
     {
-        head = this.transform.FindChild("head");
-        id = this.transform.FindChild("id").GetComponent<Text>();
-        num = this.transform.FindChild("num").GetComponent<Text>();
+        head = this.transform.Find("head");
+        id = this.transform.Find("id").GetComponent<Text>();
+        num = this.transform.Find("num").GetComponent<Text>();
         _awaked = true;
         TryFillData();
     }

@@ -24,7 +24,7 @@ public class Sample : MonoBehaviour
             return;
         }
 
-        layoutHContent = this.transform.FindChild("ScrollViewHEditor/Viewport/Content");
+        layoutHContent = this.transform.Find("ScrollViewHEditor/Viewport/Content");
         layoutH = layoutHContent.gameObject.AddComponent<SampleLayout>();
 
         LayoutConfig config = new LayoutConfig(layoutHContent);
