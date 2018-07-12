@@ -21,15 +21,20 @@ namespace Jerry
         private bool awaked = false;
         private bool inited = false;
         /// <summary>
-        /// 是否初始化好了
+        /// <para>是否初始化好了</para>
+		/// <para>外部清理资源的时候要标记为未初始化，增加标记权限</para>
         /// </summary>
         public bool Inited
-        {
-            get
-            {
-                return inited;
-            }
-        }
+		{
+			get
+			{
+				return inited;
+			}
+			set
+			{
+				inited = value;
+			}
+		}
         private bool ready = false;
 
         private LayoutConfig config = new LayoutConfig();
