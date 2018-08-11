@@ -73,7 +73,7 @@ namespace Jerry
         /// <summary>
         /// 方向
         /// </summary>
-        [Tooltip("滑动方向")]
+        [Tooltip("滑动方向(横向或竖向)")]
         public GridLayoutGroup.Axis dir = GridLayoutGroup.Axis.Horizontal;
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Jerry
         /// <summary>
         /// 可视区域dir方向长度，用来算进度
         /// </summary>
-        [Tooltip("可是区域在滑动方向的长度")]
+        [Tooltip("可视区域在滑动方向的长度，一般是Scroll View的Width或Height")]
         public float dirViewLen = 1f;
 
         /// <summary>
@@ -95,9 +95,9 @@ namespace Jerry
         public Vector2 cellSize = new Vector2(100f, 100f);
 
         /// <summary>
-        /// 两个元素间的间隔
+        /// 两个元素的间隔
         /// </summary>
-        [Tooltip("创建的两个元素间的间隔")]
+        [Tooltip("两个元素的间隔")]
         public Vector2 spacing = new Vector2(10, 10);
 
         /// <summary>

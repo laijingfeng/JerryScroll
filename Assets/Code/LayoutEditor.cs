@@ -5,11 +5,12 @@ namespace Jerry
 {
     public class LayoutEditor : MonoBehaviour
     {
+        [Tooltip("配置")]
         public LayoutConfig config = new LayoutConfig();
 
 #if UNITY_EDITOR
 
-        [Tooltip("创建若干个元素预览，提交前请置为0")]
+        [Tooltip("创建若干元素预览排版效果，提交前请置为0")]
         public int editorCreateCnt = 0;
 
         private RectTransform rectTran;
