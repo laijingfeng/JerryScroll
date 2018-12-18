@@ -1,13 +1,19 @@
 项目 | 内容
 ---|---
-标题 | JerryScroll
+标题 | [JerryScroll](https://gitee.com/jerrylai/InfinitelyGrid)
 目录 | Github/项目
-标签 | Github
-备注 | [Github](https://github.com/laijingfeng/JerryScroll)
+标签 | Github、jerry-scroll、JerryScroll、Grid、InfinitelyGrid
+备注 | 无
 创建 | 2017-06-24 09:49:42
-更新 | 2017-09-25 18:26:09
+更新 | 2018-12-18
 
 [TOC]
+
+# 转移说明
+
+2018-12-18由[Github](https://github.com/laijingfeng/JerryScroll)转移到[码云](https://gitee.com/jerrylai/InfinitelyGrid)
+
+加入包管理
 
 # 说明
 
@@ -23,7 +29,7 @@
 >
 > 数据到达一定的量的时候（如10w），Pos的值可能会非常大，会影响滑动的效果（可以明显看到progress为0和1时滑动手感是不一样的，所以感觉是数值[单排时(spacing+cell)*count]太大造成的）当然实际使用中，数据到1w都极少极少吧
 
-![image](http://odk2uwdl8.bkt.clouddn.com/2017-09-25_JerryScroll.png)
+![image](https://raw.githubusercontent.com/wiki/laijingfeng/PicAddress/pics/2017-09-25_JerryScroll.png)
 
 ## 使用（参考Sample）
 
@@ -77,3 +83,5 @@
 
 - Q：如何实现Padding？
     - A：把Mask从`Viewport`移到`Scroll View`，设置`Viewport`中`RectTransform`的`Left/Right/Top/Bottom`。
+- Q：选中态的处理？
+    - A：需要记录当前选中的LayoutItem和对应的数据ID，根据这个信息来显示隐藏选中态，切换的时候，控制一下
